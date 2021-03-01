@@ -1,0 +1,83 @@
+<!-- Keep Out - Protect the Halloween Kitty! -->
+<!-- By Charles Wong -->
+<!-- Created at Juno College -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keep Out - An Interactive Game by Charles Wong</title>
+
+    <!-- Link to Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Monofett&display=swap" rel="stylesheet">
+
+    <!-- Link to styles.css sheet -->
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <section class="wrapper altProps">
+        <div class="game">
+            <!-- Game map structure layout -->
+            <div class="ring3 outer">
+                <!-- Rufus the ghost -->
+                <img class="ghost whiteGhost rufus" src="./assets/ghost-freepik.png" alt="The friendly white ghost!">
+                <div class="ring2 inner">
+                    <div class="ring1 inner">
+                        <div class="ring0 inner">
+                            <div class="catContainer">
+                                <div class="catSpeechBubbleOuter">
+                                    <p>let's go home!</p>
+                                </div>
+                                <img class="cat" src="./assets/cat_photo3_idea.png" alt="Protect the Halloween Kitty!">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="infoPanel">
+            <!-- Timer bar to track game progress (counts down to 0) -->
+            <div class="timer">
+                <div class="timerDiv">
+                </div>
+                <p class="myTime">100s</p>
+            </div>
+            <!-- Game stats go here -->
+            <div class="infoWrap">
+                <h1>KEEP OUT</h1>
+                <div class="stats">
+
+                    <div class="scoreDiv">
+                        <span>Score:</span>
+                        <span class="myScore">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <button class="startBtn btnPrimaryProps">START</button>
+                    <!-- <button class="tempBtn">Ghost Dance</button> -->
+                </div>
+                <div class="rules">
+                    <p>✪ Protect the kitten from ghosts!</p>
+                    <p>✪ Prevent wall breaches.</p>
+                    <p>✪ Click to remove each ghost.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="wrapper">
+        <h2><a href="http://www.junocollege.com" target="_blank">Created at Juno College</a></h2>
+    </footer>
+
+    <!-- Load jQuery library and .scripts page -->
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+    <script src="./scripts.js"></script>
+
+</body>
+
+</html>
