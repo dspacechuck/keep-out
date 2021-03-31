@@ -11,44 +11,9 @@
 // Scoring:-------------------------------------------
 // 1) 100 points is awarded for each ghost click on the outermost wall. 
 // 2) An additional bonus of 100 points is awarded for each subsequent inner wall the ghost is banished from.  (i.e.: 200 points for a ghost click on the second from outermost wall)
-//----------------------------------------------------
-// Pseudocode
-// 1) START/RESET Button
-// -Press START button to start game
-// -Use an event listener to change the start button to a reset button after game begins
-// -Refresh game by activating and/or reseting all required parameters when the reset button is pressed
-// 2) Countdown Clock and Progress Bar 
-// -Use setInterval() to run a clock. Update its value every second, starting from 100s
-// -Change timer text to show "Game Over" or "You Win!" based on game results
-// -"Game Over" is accompanied by a red progress bar behind it.
-// -"You Win!" is accompanied by a blue progress bar behind it.
-// 3) Score Counter
-// -Score starts at 0 at document ready or user reset
-// -For every ghost clicked on before the ghost vanishes, award:
-// ---> 100 points for ring2 (outermost ring)
-// ---> 200 points for ring1 (middle ring)
-// ---> 300 points for ring0 (innermost ring)
-// -Update the score display with an "animation" effect. Flash the new score in green for x milliseconds.
-// 4) Ghost Dispatch
-// -Generate the next ghost when either the START/RESET button is pressed, or when the ghost has been clicked ON
-// -Randomly spawn the ghost's location and animate its movement to the adjacent wall
-// -Immediately disable (vanish) the ghost away after user clicks on it to prevent multiple points from being awarded from the same ghost
-// -Deal a damage of 7px to the closest border on the current ring (layer) on the map if the ghost is not clicked before 2 seconds is up
-// -"Animate" wall damage by flashing the border in red momentarily before updating its border width to current border width - 7px
-// -If any wall on the current ring (layer) goes down to 0px (wall is destroyed), then all other walls on the same ring collapses and the ghost advances to the next wall 
-// 5) Game Over Screen
-// -Vanish away the kitten on game over
-// -Enable "ghost taunt" to roam ghost around screen randomly
-// -Disable ghost taunt if user clicks on the ghost once
-// 6) Game Won Screen
-// -Destroy all borders and flash them in green
-// -Vanish away the ghost once borders are destroyed in green
-// -Increase kitten size
-// -Animate and display kitten speech bubble
 
-// Load ready function
+// Load ready function and set global variables to defaults
 $(document).ready(function () {
-    //Set variables to default values
     let score = 0;
     let noWallsLeft = false;
     let winImminentFlag = false;
@@ -60,7 +25,7 @@ $(document).ready(function () {
     let borderThickness;
     let currentRing = 2;
     // Add a X and Y coordinate offset to ghost position if currentRing = 1 or CurrentRing = 0
-    let ghostXYOffset = 0;
+    let ghostXYSpawn = 0;
     // Tracks if a wall has been damaged (if wallDamage function executed)
     let wallIsDamaged = false;
     // Tracks ring0, ring1, and ring2 outer traversible lenghts
@@ -69,6 +34,7 @@ $(document).ready(function () {
     const ringTrackWidth = [14, 128, 28];
     // Track the current border that the ghost is adjacent to
     let currentBorder;
+
     //Countdown timer to track game progress.  Starts at 100s
     const countdownTimer = () => {
         let remTime;
@@ -79,11 +45,9 @@ $(document).ready(function () {
                 $('.timerDiv').css('width', '');
                 $('.timerDiv').css('width', `${remTime}`);
             }
-            // If time runs to 0 AND there are still walls left. The game is automatically won.
-            // timeCounter <=0 is used in case the timer missed the time run down to 0.
+
             if (timeCounter <= 0 && (noWallsLeft === false)) {
                 invokeGameWon();
-                // Stops this clock from counting since game is won
                 clearInterval(clock);
             }
             timeCounter--;
@@ -97,14 +61,12 @@ $(document).ready(function () {
         $('.myTime').text(`${timeCounter}s`);
         $('.timerDiv').css('width', `${timeProgBar}`);
         $('.timerDiv').css('background-color', 'orange');
-        console.log("timer reset: ", timeCounter);
     }
 
     // Function to turn off rufus event listener (ghost click listener off)
     const rufusOff = () => {
-        console.log("rufus click event listener is off");
         $('.rufus').off('click', function () {
-            // Do nothing
+
         });
     }
 
@@ -115,17 +77,13 @@ $(document).ready(function () {
         if (!wallIsDamaged) {
             if (currentRing == 2) {
                 score += 100;
-                console.log("current ring is 2, current score is +", score);
             } else if (currentRing == 1) {
                 score += 200;
-                console.log("current ring is 1, current score is +", score);
             }
             else if (currentRing == 0) {
                 score += 300;
-                console.log("current ring is 0, current score is +", score);
             }
             $('.myScore').text(score);
-
             // Create dynamic score update effect
             $('.myScore').css('color', 'green');
             $('.myScore').css('font-size', '1.5rem');
@@ -192,7 +150,6 @@ $(document).ready(function () {
     }
 
     // Function to reset border health tracker
-    // Reset border health of currently tracked ring (default = outermost ring)
     // Each ring's border health = (ring # + 2) * 7
     function resetBordHealthTracker() {
         for (let i = 0; i < bordHealth.length; i++) {
@@ -204,35 +161,30 @@ $(document).ready(function () {
     // This functions dispatches a new ghost (and deals wall damage) every 2 seconds unless the ghost is clicked before 2 seconds is up. -> If the ghost is clicked before 2 seconds is up, the ghost (.rufus) click event listener will dispatch the next ghost
     const dispatchWhite = () => {
 
-        // ONLY dispatch the next ghost if the timer has not run down to 0 seconds or lower, OR if ghostTaunt sequence is true.  ghostTaunt dispatch enables special modifiers for this dispatch function
         if (timeCounter > 0 || ghostTaunt === true) {
             let randGhostOpacity = (Math.random() * 0.4) + 0.1;
 
-            // Animate (fade-in) ghost via opacity from previous randGhostOpacity to current randGhostOpacity for 800ms
-            console.log("Ghost opacity is now: ", randGhostOpacity);
             $('.rufus').animate({
                 opacity: randGhostOpacity,
             }, 800, function () {
 
             });
 
-            // Generate random coordinate for ghost based on ring2 traversible width (taking into account ghost size)
-            let randCoord = Math.floor(Math.random() * 600);
-
-            // Use the ringTrackWidth[2] array variable as randCoord2
+            let randCoord;
             let randCoord2 = ringlen[2];
-
             // Generates and selects random wall to spawn ghost
             // 0 = top wall, 1 = right wall, 2 = bottom wall, 3 = left wall
             let randWall = Math.floor(Math.random() * 4);
 
-            // Ghost offset values to use for translating ghost to appropriate ring
             if (currentRing == 2) {
-                ghostXYOffset = 65;
+                ghostXYSpawn = 65;
+                randCoord = Math.floor(Math.random() * 510) + 135;
             } else if (currentRing == 1) {
-                ghostXYOffset = 150;
+                ghostXYSpawn = 150;
+                randCoord = Math.floor(Math.random() * 315) + 235;
             } else if (currentRing == 0) {
-                ghostXYOffset = 230;
+                ghostXYSpawn = 245;
+                randCoord = Math.floor(Math.random() * 115) + 335;
             }
 
             // Revised coordinates for ghostTaunt === true only.
@@ -240,29 +192,29 @@ $(document).ready(function () {
             if (ghostTaunt === true) {
                 randCoord = randCoord / 2;
                 randCoord2 = ringlen[2] / 2;
-                ghostXYOffset = 0;
+                ghostXYSpawn = 0;
             }
 
             // Assign ghost to appropriate wall (i.e. border) using randWall variable. randWall of 0 = top-border, randWall of 1 = right-border, randWall of 2 = bottom-border, randWall of 3 = left-border
             if (randWall == 0) {
                 $('.ghost').css('left', `${randCoord}px`);
                 $('.ghost').css('top', `${ringTrackWidth[2]}px`);
-                animateDown(ghostXYOffset);
+                animateDown(ghostXYSpawn);
                 currentBorder = 'border-top';
             } else if (randWall == 1) {
                 $('.ghost').css('left', `${randCoord2}px`);
                 $('.ghost').css('top', `${randCoord}px`);
-                animateLeft(ghostXYOffset);
+                animateLeft(ghostXYSpawn);
                 currentBorder = 'border-right';
             } else if (randWall == 2) {
                 $('.ghost').css('left', `${randCoord}px`);
                 $('.ghost').css('top', `${randCoord2}px`);
-                animateUp(ghostXYOffset);
+                animateUp(ghostXYSpawn);
                 currentBorder = 'border-bottom';
             } else if (randWall == 3) {
                 $('.ghost').css('left', `${ringTrackWidth[2]}px`);
                 $('.ghost').css('top', `${randCoord}px`);
-                animateRight(ghostXYOffset);
+                animateRight(ghostXYSpawn);
                 currentBorder = 'border-left';
             }
 
@@ -303,7 +255,7 @@ $(document).ready(function () {
             $('.ghost').css('visibility', 'visible');
             $('.ghost').css('opacity', '0.5');
 
-            // Inflict damage to the current border (wall) ONLY if clock has not counted down to 0 during the time setTimeout is counting down to execute its own function.  This prevents conflicts between wallDamage function's call out to the destroyWall function and invokeGameWon's call out to the destroyWall function. 
+            // Inflict damage to the current wall ONLY if clock has not counted down to 0 during the time setTimeout is counting down to execute its own function.  
             // Also, don't run wallDamage function if the ghost is only being dispatched for taunts
             myTimeout = setTimeout(function () {
                 if (winImminentFlag === false) {
@@ -313,21 +265,19 @@ $(document).ready(function () {
                     dispatchWhite();
                 }
             }, 2000);
-
         }
     }
 
     // Function to decrease wall health
     // Check to see which wall we are on (i.e.: which is the outermost wall where bordHealth is NOT 0)
     // Determine current location of ghost relative to current ring
-    //i.e. check current ghost location x and y offset from closest wall
+    // i.e. check current ghost location x and y offset from closest wall
     // Update wall (border) thickness
     // Update bordHealth array
     function wallDamage(borderToDamage, borderID) {
 
         // Translates into "${border-side}-width" format
         let borderToDamageSyntax = `${borderToDamage}-width`;
-        console.log("Syn", borderToDamageSyntax);
 
         // Translates into "ring{currentRing}"  (i.e.: ring0, ring1, ring2) format
         let activeRingSyntax = `ring${currentRing}`;
@@ -335,7 +285,6 @@ $(document).ready(function () {
         // GET the current border thickness of the border to be damaged. Note parseInt required to extract numeric value without "px" suffix
         // borderThickness = parseInt($('.ring2').css(`${borderToDamageSyntax}`));
         borderThickness = parseInt($(`.${activeRingSyntax}`).css(`${borderToDamageSyntax}`));
-        console.log("The current border before damage is this thick: ", borderThickness);
 
         // Invoke function to destroy targetted wall with specified border with a damage of 7
         destroyWall(activeRingSyntax, borderToDamage, 7, 'red');
@@ -346,7 +295,6 @@ $(document).ready(function () {
         //3) Animate cat
         updateBordHealth(borderThickness, borderID);
         if (checkForWallBreach()) {
-            console.log("wall is breached indeed");
 
             // Animate cat after destroying all walls in current ring
             if (destroyRemnantWalls()) {
@@ -355,7 +303,6 @@ $(document).ready(function () {
 
             //If .ring0 has collapsed AND time counter has more than 1 second remaining (to prevent overlap of this function and the catTeleport function)
             // This scenario occurs if the game ends before timer runs to 0 seconds (i.e. Game Over regardless of timeCounter >0 or not)
-
             if (currentRing <= 0) {
                 noWallsLeft = true;
                 invokeGameOver();
@@ -379,7 +326,7 @@ $(document).ready(function () {
         // Remove ghost from map. This is syncrhonized with the end of the ghostDance animation at 3 seconds
         setTimeout(function () {
             disableGhost($('.ghost'));
-            // Set ghostTaunt === true. This enables the ghost to still be dispatched but not respond to clicks for score updates
+            // Set ghostTaunt === true. -> displatch ghost but not respond to clicks for score updates
             ghostTaunt = true;
             // Dispatch white ghost once again. This makes him dance around the screen unless he is dismissed with one last click
             dispatchWhite();
@@ -393,7 +340,6 @@ $(document).ready(function () {
     // Function to invoke game won sequence (player won)
     const invokeGameWon = () => {
         winImminentFlag = true;
-        console.log("Invoke Game Won running");
         $('.myTime').css('font-size', '1.4rem');
         $('.timerDiv').css('width', '200px');
         $('.myTime').text(`You Win!`);
@@ -424,7 +370,6 @@ $(document).ready(function () {
             }, 900, function () {
             });
         } else {
-            // Vanishes cat away from map
             $('.cat').animate({
                 opacity: 0,
                 width: "-=0",
@@ -438,7 +383,6 @@ $(document).ready(function () {
     const catTeleport = () => {
         //Expand cat out of box
         $('.cat').animate({
-
             height: '+=30',
             width: '+=30',
         }, 1000, function () {
@@ -450,7 +394,7 @@ $(document).ready(function () {
         });
 
         // Starting from .ring0 and going to .ring3
-        // Destroy every ring (wall) and "animate" this in green
+        // Destroy every ring (wall) to free cat and "animate" this in green
         for (i = 0; i < 4; i++) {
             destroyWall(`ring${i}`, 'border', i + 7 * i, 'green');
         }
@@ -496,7 +440,7 @@ $(document).ready(function () {
         });
     }
 
-    // Function to destroy a single wall
+    // Function to destroy a single wall by 7px per hit
     // Highlights wall in red and then decrement its border width by damageAmt 
     function destroyWall(targetRing, targetBorder, damageAmt, dmgColor) {
         wallIsDamaged = true;
@@ -506,7 +450,7 @@ $(document).ready(function () {
             $(`.${targetRing}`).css(`${targetBorder}-color`, ' rgb(67, 44, 90)');
         }, 400
         );
-        // Decrement old borderThickness by 7px;
+
         borderThickness -= damageAmt;
         // Update the border thickness on the map after 700 ms
         setTimeout(function () {
@@ -521,11 +465,8 @@ $(document).ready(function () {
         setTimeout(function () {
             // Add thisRing variable since currentRing would have decreased by 1 in original loop due to setTimeout asynchronous delay
             let thisRing = currentRing + 1;
-            console.log("destroy other walls. current ring: ", currentRing);
-            console.log("This ring: ", thisRing);
             $(`.ring${thisRing}`).css('border-width', '0px');
-        }, 700
-        );
+        }, 700);
         return true;
     }
 
@@ -546,12 +487,9 @@ $(document).ready(function () {
 
     // Refresh game on Start button click
     $('.startBtn').on('click', function (e) {
-        // Prevent page from refreshing
         e.preventDefault();
-        // Clear countdown timer and clear ghost dispatch timer
         clearInterval(clock);
         clearTimeout(myTimeout);
-        // Switch ghostTaunt variable to false
         ghostTaunt = false;
         // Stop all animations if they are still running or about to run in the queue from the previous game
         $('.ghost').stop();
@@ -568,17 +506,11 @@ $(document).ready(function () {
         renderResetBtn(this);
         resetTimer();
         resetScore();
-        // Resets all borders to full health
         restoreBorders();
-        // Reset border health tracker
         resetBordHealthTracker();
-        // Start countdown timer
         countdownTimer();
-        // Reintroduce cat
         enableCat();
-        // Reintroduce ghost
         enableGhost($('.ghost'));
-        // Dispatch white ghost
         dispatchWhite();
     });
 
@@ -600,8 +532,5 @@ $(document).ready(function () {
         // Performs checking to see if user clicked on ghost before wall breached and then Update current score
         updateScore();
     });
-
-    console.log('jQuery ready!');
-    loadState = 1;
 
 });
