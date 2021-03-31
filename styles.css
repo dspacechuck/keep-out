@@ -214,27 +214,21 @@ h1{
 }
 
 /* Set ghost properties */
-.ghost{
+.rufus{
+    top: 21px;
+    left: 600px;
     z-index: 100;
     height: 70px;
     width: 70px;
     display: inline-block;
     position: absolute;
     /* Always refernce coordinates from top + left to keep .ring3 origin point usable */
-    top: 21px;
-    left: 21px;
     opacity: 0.1;
     visibility: hidden;
 }
 
-/* Set ghost Rufus' properties */
-.rufus{
-    top: 21px;
-    left: 600px;
-}
-
 /* Hover properties for ghost */
-.ghost:hover{
+.rufus:hover{
     cursor: pointer;
 }
 

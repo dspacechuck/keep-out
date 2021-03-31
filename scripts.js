@@ -110,16 +110,16 @@ $(document).ready(function () {
     // (to prevent it from being clickable and points awarded once clicked)
     function disableGhost(thisGhost) {
         $(thisGhost).css('visibility', 'hidden');
-        $('.ghost').css('opacity', '0');
+        $('.rufus').css('opacity', '0');
     }
 
     // Function to enable ghost (after game reset or game over)
     // Render ghost visible for clicking, reset ghost opacity to 1, and reset ghost height
     function enableGhost(thisGhost) {
         $(thisGhost).css('visibility', 'visible');
-        $('.ghost').css('height', '70px');
-        $('.ghost').css('width', '70px');
-        $('.ghost').css('opacity', '0.8');
+        $('.rufus').css('height', '70px');
+        $('.rufus').css('width', '70px');
+        $('.rufus').css('opacity', '0.8');
     }
 
     //Function to reintroduce cat (after game reset)
@@ -197,23 +197,23 @@ $(document).ready(function () {
 
             // Assign ghost to appropriate wall (i.e. border) using randWall variable. randWall of 0 = top-border, randWall of 1 = right-border, randWall of 2 = bottom-border, randWall of 3 = left-border
             if (randWall == 0) {
-                $('.ghost').css('left', `${randCoord}px`);
-                $('.ghost').css('top', `${ringTrackWidth[2]}px`);
+                $('.rufus').css('left', `${randCoord}px`);
+                $('.rufus').css('top', `${ringTrackWidth[2]}px`);
                 animateDown(ghostXYSpawn);
                 currentBorder = 'border-top';
             } else if (randWall == 1) {
-                $('.ghost').css('left', `${randCoord2}px`);
-                $('.ghost').css('top', `${randCoord}px`);
+                $('.rufus').css('left', `${randCoord2}px`);
+                $('.rufus').css('top', `${randCoord}px`);
                 animateLeft(ghostXYSpawn);
                 currentBorder = 'border-right';
             } else if (randWall == 2) {
-                $('.ghost').css('left', `${randCoord}px`);
-                $('.ghost').css('top', `${randCoord2}px`);
+                $('.rufus').css('left', `${randCoord}px`);
+                $('.rufus').css('top', `${randCoord2}px`);
                 animateUp(ghostXYSpawn);
                 currentBorder = 'border-bottom';
             } else if (randWall == 3) {
-                $('.ghost').css('left', `${ringTrackWidth[2]}px`);
-                $('.ghost').css('top', `${randCoord}px`);
+                $('.rufus').css('left', `${ringTrackWidth[2]}px`);
+                $('.rufus').css('top', `${randCoord}px`);
                 animateRight(ghostXYSpawn);
                 currentBorder = 'border-left';
             }
@@ -252,8 +252,8 @@ $(document).ready(function () {
             }
 
             // Render ghost visible for clicking
-            $('.ghost').css('visibility', 'visible');
-            $('.ghost').css('opacity', '0.5');
+            $('.rufus').css('visibility', 'visible');
+            $('.rufus').css('opacity', '0.5');
 
             // Inflict damage to the current wall ONLY if clock has not counted down to 0 during the time setTimeout is counting down to execute its own function.  
             // Also, don't run wallDamage function if the ghost is only being dispatched for taunts
@@ -325,12 +325,12 @@ $(document).ready(function () {
 
         // Remove ghost from map. This is syncrhonized with the end of the ghostDance animation at 3 seconds
         setTimeout(function () {
-            disableGhost($('.ghost'));
+            disableGhost($('.rufus'));
             // Set ghostTaunt === true. -> displatch ghost but not respond to clicks for score updates
             ghostTaunt = true;
             // Dispatch white ghost once again. This makes him dance around the screen unless he is dismissed with one last click
             dispatchWhite();
-            $('.ghost').css('opacity', '0.5');
+            $('.rufus').css('opacity', '0.5');
         }, 3000);
 
         //Enforce timeCounter to be -1 to stop ghosts from dispatching AFTER ghost is clicked one last time
@@ -400,21 +400,21 @@ $(document).ready(function () {
         }
 
         //Fade away ghost
-        $('.ghost').animate({
+        $('.rufus').animate({
             opacity: 0,
         }, 1000, function () {
         }
         );
 
         // Disable ghost
-        disableGhost($('.ghost'));
+        disableGhost($('.rufus'));
     }
 
     // Function to make ghost dance if all rings are destroyed
-    const ghostDance = () => {
-        $('.ghost').css('left', `360px`);
-        $('.ghost').css('top', `225px`);
-        $('.ghost').animate({
+    function ghostDance() {
+        $('.rufus').css('left', `360px`);
+        $('.rufus').css('top', `225px`);
+        $('.rufus').animate({
             opacity: 0.7,
             left: '+=130',
             top: '+=130',
@@ -422,7 +422,7 @@ $(document).ready(function () {
             width: '+=100',
         }, 1000, function () {
         });
-        $('.ghost').animate({
+        $('.rufus').animate({
             opacity: 0.3,
             left: '-=130',
             top: '-=130',
@@ -430,7 +430,7 @@ $(document).ready(function () {
             width: '+=100',
         }, 1000, function () {
         });
-        $('.ghost').animate({
+        $('.rufus').animate({
             opacity: 0,
             left: '390',
             top: '390',
@@ -461,7 +461,7 @@ $(document).ready(function () {
     }
 
     // Function to destroy other walls on same ring (i.e.: enforce border-width = 0)
-    const destroyRemnantWalls = () => {
+    function destroyRemnantWalls() {
         setTimeout(function () {
             // Add thisRing variable since currentRing would have decreased by 1 in original loop due to setTimeout asynchronous delay
             let thisRing = currentRing + 1;
@@ -492,7 +492,7 @@ $(document).ready(function () {
         clearTimeout(myTimeout);
         ghostTaunt = false;
         // Stop all animations if they are still running or about to run in the queue from the previous game
-        $('.ghost').stop();
+        $('.rufus').stop();
         $('.rufus').stop();
         $('.cat').stop();
         $('.catSpeechBubbleOuter').stop();
@@ -510,7 +510,7 @@ $(document).ready(function () {
         resetBordHealthTracker();
         countdownTimer();
         enableCat();
-        enableGhost($('.ghost'));
+        enableGhost($('.rufus'));
         dispatchWhite();
     });
 
@@ -518,7 +518,7 @@ $(document).ready(function () {
         // Clear timeout (for wall damage) (and for dispatchWhite loop) if ghost is clicked on
         clearTimeout(myTimeout);
         // Stop all ghost animations if they are still running from before the click
-        $('.ghost').stop();
+        $('.rufus').stop();
         $('.rufus').stop();
         // Disables ghost immediately after user clicked on it (prevents multiple points scoring)
         disableGhost(this);
