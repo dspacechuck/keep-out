@@ -10,289 +10,294 @@ html { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: 
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; border: 0; padding: 0; white-space: nowrap; clip-path: inset(100%); clip: rect(0 0 0 0); overflow: hidden;}
 
 /* Strip default margins and padding */
-*{
-    margin: 0;
-    padding: 0;
+* {
+  margin: 0;
+  padding: 0;
 }
 
 /* Body styling */
-body{
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 62.5%;
-    background:  rgb(39, 15, 63);    
+body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 62.5%;
+  background: rgb(39, 15, 63);
 }
 
 /* Container for game and infoPanel */
-.wrapper{
-    width: 1200px;
-    margin: 0 auto;
-    min-width: 1000px;
+.wrapper {
+  width: 1200px;
+  margin: 0 auto;
+  min-width: 1000px;
 }
 
 /* Alternate properties for game screen styling */
-.altProps{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 900px;
+.altProps {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 900px;
 }
 
 /* Container for game */
-.game{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgb(102, 51, 153);
-    padding: 20px;
-    flex: 0 0 75%;
-    height: 100%;
-    border-top-left-radius: 10px;
+.game {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgb(102, 51, 153);
+  padding: 20px;
+  flex: 0 0 75%;
+  height: 100%;
+  border-top-left-radius: 10px;
 }
 
 /* Game stats info panel*/
-.infoPanel{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    background: palevioletred;
-    font-family: monospace;
-    color: darkslateblue;
-    font-size: 1.4rem;
-    font-weight: bold;
-    flex: 0 1 25%;
-    height: 100%;
-    text-align: center;
-    border-bottom-right-radius: 10px;
-    border-top-right-radius: 10px;
+.infoPanel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background: palevioletred;
+  font-family: monospace;
+  color: darkslateblue;
+  font-size: 1.4rem;
+  font-weight: bold;
+  flex: 0 1 25%;
+  height: 100%;
+  text-align: center;
+  border-bottom-right-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
 /* Game stats inner container */
-.infoWrap{
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 170px;
+.infoWrap {
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 170px;
 }
 
 /* Stats conatainer */
-.stats{
-    height: 100px;
+.stats {
+  height: 100px;
 }
 
 /* Timer progress bar */
-.timerDiv{
-    width: 200px;
-    height: 14px;
-    background: orange;
-    border: 3px solid none;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    font-size: 1.7rem;
-    font-weight: bold;
+.timerDiv {
+  width: 200px;
+  height: 14px;
+  background: orange;
+  border: 3px solid none;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  font-size: 1.7rem;
+  font-weight: bold;
 }
 
 /* Styling for time readout text */
-.myTime{
-    word-wrap: nowrap;
-    position: relative;
-    top: -12px;
+.myTime {
+  word-wrap: nowrap;
+  position: relative;
+  top: -12px;
 }
 
 /* Format start/reset button */
-.startBtn{
-    border-radius: 10px;
-    padding: 15px;
-    width: 120px;
-    color: darkslateblue;
-    border: 3px solid darkslateblue;
+.startBtn {
+  border-radius: 10px;
+  padding: 15px;
+  width: 120px;
+  color: darkslateblue;
+  border: 3px solid darkslateblue;
 }
 
 /* Start button hover state */
-.startBtn:hover{
-    background: rgb(78, 216, 44);
-    cursor: pointer;
+.startBtn:hover {
+  background: rgb(78, 216, 44);
+  cursor: pointer;
 }
 
 /* Primary properties for start button */
-.btnPrimaryProps{
-    background: palevioletred;
-    transition: ease 1s;
+.btnPrimaryProps {
+  background: palevioletred;
+  transition: ease 1s;
 }
 
 /* Alt properties class for start button (when it changes to "RESET") */
-.btnAltProps{
-    background: orange;
-    transition: ease 1s;
+.btnAltProps {
+  background: orange;
+  transition: ease 1s;
 }
 
 /* Alt properties class for start button (when it changes to "RESET") on hover*/
-.btnAltProps:hover{
-    background: rgb(235, 47, 47);
-    cursor: pointer;
+.btnAltProps:hover {
+  background: rgb(235, 47, 47);
+  cursor: pointer;
 }
 
 /* Rules section text formatting */
-.rules p{
-    font-family: Arial, Helvetica, sans-serif;
-    font-weight: lighter;
-    font-size: 0.95rem;
-    margin: 20px;
-    text-align: left;
+.rules p {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: lighter;
+  font-size: 0.95rem;
+  margin: 20px;
+  text-align: left;
 }
 
 /* Container for game score */
-.scoreDiv{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
+.scoreDiv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
 }
 
 /* h1 (title formatting) */
-h1{
-    margin: 0;
-    padding: 0;
-    font-family: 'Monofett', cursive;
-    font-size: 4.5rem;
-    text-align: center;
-    color: blueviolet;
+h1 {
+  margin: 0;
+  padding: 0;
+  font-family: "Monofett", cursive;
+  font-size: 4.5rem;
+  text-align: center;
+  color: blueviolet;
 }
 
 /* Set properties for outer and inner rings */
-.outer,.inner{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10%;
+.outer,
+.inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10%;
 }
 
 /* Outer-most ring formatting (ring 3) */
 /* This ring has no borders. It is merely a ring to place the ghost */
-.outer{
-    background: rgb(88, 56, 119);
+.outer {
+  background: rgb(88, 56, 119);
 }
 
 /* Inner rings formatting (rings 0, 1, and 2) */
-.inner{
-    background: rgb(110, 77, 143);
+.inner {
+  background: rgb(110, 77, 143);
 }
 
 /* Formatting for ring3 (outernmost ring) */
-.ring3{
-    border-width: 0;
-    position: relative;
-    width: 780px;
-    height: 780px;
+.ring3 {
+  border-width: 0;
+  position: relative;
+  width: 780px;
+  height: 780px;
 }
 
 /* Formatting for ring2 (third innermost ring) */
-.ring2{
-    border: 28px solid rgb(67, 44, 90);
-    width: 580px;
-    height: 580px;
+.ring2 {
+  border: 28px solid rgb(67, 44, 90);
+  width: 580px;
+  height: 580px;
 }
 
 /* Formatting for ring1 (second innermost ring) */
-.ring1{
-    border: 21px solid rgb(67, 44, 90);
-    width: 380px;
-    height: 380px;
+.ring1 {
+  border: 21px solid rgb(67, 44, 90);
+  width: 380px;
+  height: 380px;
 }
 
 /* Formatting for innermost ring */
-.ring0{
-    border: 14px solid rgb(67, 44, 90);
-    width: 180px;
-    height: 180px;
+.ring0 {
+  border: 14px solid rgb(67, 44, 90);
+  width: 180px;
+  height: 180px;
 }
 
 /* Set ghost properties */
-.rufus{
-    top: 21px;
-    left: 600px;
-    z-index: 100;
-    height: 70px;
-    width: 70px;
-    display: inline-block;
-    position: absolute;
-    /* Always refernce coordinates from top + left to keep .ring3 origin point usable */
-    opacity: 0.1;
-    visibility: hidden;
+.rufus {
+  top: 21px;
+  left: 600px;
+  z-index: 100;
+  height: 70px;
+  width: 70px;
+  display: inline-block;
+  position: absolute;
+  /* Always refernce coordinates from top + left to keep .ring3 origin point usable */
+  opacity: 0.1;
+  visibility: hidden;
 }
 
 /* Hover properties for ghost */
-.rufus:hover{
-    cursor: pointer;
+.rufus:hover {
+  cursor: pointer;
+}
+
+/* Prevents ghost highlighting */
+.rufus::selection {
+  background-color: transparent;
 }
 
 /* Container for cat and his speech bubble */
-.catContainer{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    bottom: 55px;
-    left: 20px;
+.catContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  bottom: 55px;
+  left: 20px;
 }
 
 /* Container for cat speech bubble and the words inside */
-.catSpeechBubbleOuter{
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 150px;
-    height: 100px;
-    background-image: url("./assets/deepPurpleSpeech.png");
-    background-size: 150px 100px;
-    background-repeat: no-repeat;
-    opacity: 0;
+.catSpeechBubbleOuter {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 150px;
+  height: 100px;
+  background-image: url("./assets/deepPurpleSpeech.png");
+  background-size: 150px 100px;
+  background-repeat: no-repeat;
+  opacity: 0;
 }
 
 /* Formatting for words within speech bubble */
-.catSpeechBubbleOuter p{
-    padding: 20px;
-    padding-top: 33px;
-    font-family: arial;
-    font-size: 1rem;
-    color:rgb(219, 112, 147);
+.catSpeechBubbleOuter p {
+  padding: 20px;
+  padding-top: 33px;
+  font-family: arial;
+  font-size: 1rem;
+  color: rgb(219, 112, 147);
 }
 
 /* Set cat properties */
-.cat{
-    height: 110px;
-    width: 110px;
-    position: relative;
+.cat {
+  height: 110px;
+  width: 110px;
+  position: relative;
 }
 
 /* Footer properties */
-footer{
-    text-align: left;
-} 
+footer {
+  text-align: left;
+}
 
 /* Formatting for Juno College Link */
-footer a{   
-    color:palevioletred;
-    font-family: arial;
-    text-decoration: none;
-    display: inline-block;
-    padding: 10px 20px;
-    background:rgb(102, 51, 153);
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    letter-spacing: 5px;
-    position: relative;
-    bottom: 30px;
+footer a {
+  color: palevioletred;
+  font-family: arial;
+  text-decoration: none;
+  display: inline-block;
+  padding: 10px 20px;
+  background: rgb(102, 51, 153);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  letter-spacing: 5px;
+  position: relative;
+  bottom: 30px;
 }
 
 /* Hover state for Juno College Link */
-footer a:hover{
-    color:white;
+footer a:hover {
+  color: white;
 }
-

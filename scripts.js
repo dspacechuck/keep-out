@@ -159,7 +159,7 @@ $(document).ready(function () {
 
     // Function to spawn new/next white ghost
     // This functions dispatches a new ghost (and deals wall damage) every 2 seconds unless the ghost is clicked before 2 seconds is up. -> If the ghost is clicked before 2 seconds is up, the ghost (.rufus) click event listener will dispatch the next ghost
-    const dispatchWhite = () => {
+    const dispatchGhost = () => {
 
         if (timeCounter > 0 || ghostTaunt === true) {
             let randGhostOpacity = (Math.random() * 0.4) + 0.1;
@@ -262,7 +262,7 @@ $(document).ready(function () {
                     if (ghostTaunt === false) {
                         wallDamage(currentBorder, randWall);
                     }
-                    dispatchWhite();
+                    dispatchGhost();
                 }
             }, 2000);
         }
@@ -329,7 +329,7 @@ $(document).ready(function () {
             // Set ghostTaunt === true. -> displatch ghost but not respond to clicks for score updates
             ghostTaunt = true;
             // Dispatch white ghost once again. This makes him dance around the screen unless he is dismissed with one last click
-            dispatchWhite();
+            dispatchGhost();
             $('.rufus').css('opacity', '0.5');
         }, 3000);
 
@@ -493,7 +493,6 @@ $(document).ready(function () {
         ghostTaunt = false;
         // Stop all animations if they are still running or about to run in the queue from the previous game
         $('.rufus').stop();
-        $('.rufus').stop();
         $('.cat').stop();
         $('.catSpeechBubbleOuter').stop();
         // Hide the cat's speech bubble.
@@ -511,14 +510,13 @@ $(document).ready(function () {
         countdownTimer();
         enableCat();
         enableGhost($('.rufus'));
-        dispatchWhite();
+        dispatchGhost();
     });
 
     $('.rufus').on('click', function () {
-        // Clear timeout (for wall damage) (and for dispatchWhite loop) if ghost is clicked on
+        // Clear timeout (for wall damage) (and for dispatchGhost loop) if ghost is clicked on
         clearTimeout(myTimeout);
         // Stop all ghost animations if they are still running from before the click
-        $('.rufus').stop();
         $('.rufus').stop();
         // Disables ghost immediately after user clicked on it (prevents multiple points scoring)
         disableGhost(this);
@@ -526,7 +524,7 @@ $(document).ready(function () {
         // Dispatch the next ghost after 1500ms if the time counter has not run down to 0 and if there are still walls left
         if (timeCounter > 0 && !noWallsLeft) {
             myTimeout = setTimeout(function () {
-                dispatchWhite();
+                dispatchGhost();
             }, 1500);
         }
         // Performs checking to see if user clicked on ghost before wall breached and then Update current score
