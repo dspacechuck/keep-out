@@ -234,9 +234,9 @@ h1 {
 }
 
 /* Prevents ghost highlighting */
-.rufus::selection {
+/* .rufus::selection {
   background-color: transparent;
-}
+} */
 
 /* Container for cat and his speech bubble */
 .catContainer {
