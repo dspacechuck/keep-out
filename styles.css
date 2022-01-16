@@ -51,6 +51,8 @@ body {
   flex: 0 0 75%;
   height: 100%;
   border-top-left-radius: 10px;
+  /* Temporarily added this radius for UI coherency during user testing */
+  border-bottom-left-radius: 10px;
 }
 
 /* Game stats info panel*/
