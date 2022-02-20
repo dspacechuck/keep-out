@@ -1,6 +1,5 @@
 // Keep Out - Protect the Halloween Kitty!
 // By Charles Wong
-// Created at Juno College
 //----------------------------------------------------
 // Click on each ghost before they vanish to win points.  If the ghost or monster vanishes, damage is dealt to the associated wall.  Each wall's health is based on its border width (14px, 21px, or 28px).  Any time a ghost or monster vanishes, 7px of damage is dealt to its associated wall.  If the wall border decreases to 0px, all walls for the current ring (layer) is breached and ghost will advance to the next wall.  If the innermost wall is breached before the timer runs down to 0 seconds, the game is over.
 //Game Mechanics:--------------------------------------
@@ -14,7 +13,9 @@
 
 // Load ready function and set global variables to defaults
 $(document).ready(function () {
+    let clickSuccessCount = 0;
     let score = 0;
+    let reactionTime = []; // Array of all player reaction times in ms
     let noWallsLeft = false;
     let winImminentFlag = false;
     let timeCounter = 100;
@@ -34,6 +35,13 @@ $(document).ready(function () {
     const ringTrackWidth = [14, 128, 28];
     // Track the current border that the ghost is adjacent to
     let currentBorder;
+    
+    const ghostClickSound = new Audio('./assets/power_up_ray-mike_koenig-half.mp3');
+    const bgMusic = new Audio('./assets/strange09speed.mp3');
+
+    // Variables to track click reaction time
+    let tPrev;
+    let tNow;
 
     //Countdown timer to track game progress.  Starts at 100s
     const countdownTimer = () => {
@@ -83,6 +91,9 @@ $(document).ready(function () {
             else if (currentRing == 0) {
                 score += 300;
             }
+
+            // score += reactionTime[reactionTime.length - 1]
+
             $('.myScore').text(score);
             // Create dynamic score update effect
             $('.myScore').css('color', 'green');
@@ -312,6 +323,49 @@ $(document).ready(function () {
         };
     }
 
+    // Shakes the map when ghost is banished
+    const shakeMap = (clickReactionTime) => {
+    let playSpeed;
+
+        if (clickReactionTime < 1000) {
+            playSpeed = 1;
+        } else if (clickReactionTime >= 1000 && clickReactionTime < 1500) {
+            playSpeed = 0.7;
+        } else {
+            playSpeed = 0.5;
+        }
+
+        const timeline = gsap.timeline({ defaults: { duration: 0.02 } });
+        timeline.timeScale(playSpeed);
+
+        timeline
+        .to('.outer', { duration: 0.02, ease: "power2.out", x: +3 })
+        .to('.outer', { duration: 0.02, ease: "power2.out", x: -3 })
+
+    }
+ 
+    // Sets and gets the player's click reaction time
+    const getClickTime = () => {
+        if (!tPrev) {
+            tPrev = tNow = new Date();
+        } else {
+            tNow = new Date();
+            const clickTime = Math.abs(tNow - tPrev - 2000);
+            reactionTime.push(clickTime);
+            console.log("Your click reaction time: ", clickTime, "ms");
+            shakeMap(clickTime);
+            tPrev = tNow;
+        }
+    }
+
+    // Tracks how many times the player has clicked on the ghost successfully
+    // For every 3 successful clicks, speed up the ghost
+    const successfulClickCount = () => {
+        getClickTime();
+        clickSuccessCount++;
+        console.log(clickSuccessCount);
+    }
+
     // Function to invoke game over sequence (player lost)
     // Stops clock countdown, unbinds the click event listener from the ghost, and make the ghost dance around the screen.
     const invokeGameOver = () => {
@@ -488,6 +542,7 @@ $(document).ready(function () {
     // Refresh game on Start button click
     $('.startBtn').on('click', function (e) {
         e.preventDefault();
+        bgMusic.play();
         clearInterval(clock);
         clearTimeout(myTimeout);
         ghostTaunt = false;
@@ -514,6 +569,8 @@ $(document).ready(function () {
     });
 
     $('.rufus').on('click', function () {
+        ghostClickSound.play();
+        successfulClickCount();
         // Clear timeout (for wall damage) (and for dispatchGhost loop) if ghost is clicked on
         clearTimeout(myTimeout);
         // Stop all ghost animations if they are still running from before the click
