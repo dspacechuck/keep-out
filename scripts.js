@@ -20,6 +20,11 @@ $(document).ready(function () {
     let noWallsLeft = false;
     let winImminentFlag = false;
     let timeCounter = 100;
+    
+    let ghostFadeInTime = 400;
+    let ghostTravelSpeed = 600;
+    let wallDamageInterval = 1600;
+
     let clock;
     let myTimeout;
     let ghostTaunt = false;
@@ -43,6 +48,48 @@ $(document).ready(function () {
     // Variables to track click reaction time
     let tPrev;
     let tNow;
+
+    const playClickSound = () => {
+        if (ghostClickSound.pause()) {
+            ghostClickSound.play();
+        } else {
+            ghostClickSound.pause();
+            ghostClickSound.currentTime = 0;
+            ghostClickSound.play();
+        }
+    }
+
+    const bindArrowKeys = () => {
+        document.addEventListener("keydown", (e) => {
+            
+            if (e.defaultPrevented) {
+                return;
+            }
+
+            switch (e.key) {
+                case "ArrowDown":
+                    console.log(e);
+                    console.log("Arrow Down");
+                    // console.log(ghostClickSound);
+                    playClickSound();
+                    break;
+                case "ArrowUp":
+                    console.log("Arrow Up");
+                    playClickSound();
+                    break;
+                case "ArrowLeft":
+                    console.log("Arrow Left");
+                    playClickSound();
+                    break;
+                case "ArrowRight":
+                    console.log("Arrow Right");
+                    playClickSound();
+                    break;
+            }
+        })
+    }
+
+    bindArrowKeys();
 
     //Countdown timer to track game progress.  Starts at 100s
     const countdownTimer = () => {
@@ -111,8 +158,6 @@ $(document).ready(function () {
                 $('.myScore').css('font-size', '1.4rem');
             }, 700);
         } else {
-
-
 
         }
         // Reset wallIsDamaged flag to false
@@ -191,7 +236,7 @@ $(document).ready(function () {
 
             $('.rufus').animate({
                 opacity: randGhostOpacity,
-            }, 800, function () {
+            }, ghostFadeInTime, function () {
 
             });
 
@@ -248,7 +293,7 @@ $(document).ready(function () {
                 $('.rufus').animate({
                     top: `${locOffset}`,
                     left: "+=15",
-                }, 700, function () {
+                }, ghostTravelSpeed, function () {
                 });
             }
 
@@ -256,7 +301,7 @@ $(document).ready(function () {
             function animateLeft(locOffset) {
                 $('.rufus').animate({
                     left: `-=${locOffset}`,
-                }, 700, function () {
+                }, ghostTravelSpeed, function () {
                 });
             }
 
@@ -264,7 +309,7 @@ $(document).ready(function () {
             function animateUp(locOffset) {
                 $('.rufus').animate({
                     top: `-=${locOffset}`,
-                }, 700, function () {
+                }, ghostTravelSpeed, function () {
                 });
             }
 
@@ -272,7 +317,7 @@ $(document).ready(function () {
             function animateRight(locOffset) {
                 $('.rufus').animate({
                     left: `${locOffset}`,
-                }, 700, function () {
+                }, ghostTravelSpeed, function () {
                 });
             }
 
@@ -289,7 +334,7 @@ $(document).ready(function () {
                     }
                     dispatchGhost();
                 }
-            }, 2000);
+            }, wallDamageInterval);
         }
     }
 
@@ -381,12 +426,22 @@ $(document).ready(function () {
     }
 
     // Tracks how many times the player has clicked on the ghost successfully
-    // For every 3 successful clicks, speed up the ghost
-    // const successfulClickCount = () => {
-    //     getClickTime();
-    //     clickSuccessCount++;
-    //     console.log(clickSuccessCount);
-    // }
+    // Progressively increases the difficulty of the game accordingly
+    const successfulClickCount = () => {
+        clickSuccessCount++;
+        console.log(clickSuccessCount);
+        if (clickSuccessCount % 3 === 0) {
+            ghostFadeInTime /= 2;
+            console.log("ghost fade-in time: ", ghostFadeInTime);
+        }
+
+        if (clickSuccessCount % 4 === 0) {
+            ghostTravelSpeed /= 2;
+            console.log("ghost travel speed: ", ghostTravelSpeed);
+            wallDamageInterval -= 150;
+            console.log("wall damage interval: ", wallDamageInterval);
+        }
+    }
 
     // Function to invoke game over sequence (player lost)
     // Stops clock countdown, unbinds the click event listener from the ghost, and make the ghost dance around the screen.
@@ -566,6 +621,7 @@ $(document).ready(function () {
     $('.startBtn').on('click', function (e) {
         e.preventDefault();
         // bgMusic.play();
+        // bindArrowKeys();
         clearInterval(clock);
         clearTimeout(myTimeout);
         ghostTaunt = false;
@@ -593,9 +649,10 @@ $(document).ready(function () {
 
     $('.rufus').on('click', function () {
         ghostClickSound.play();
-        // successfulClickCount();
+        successfulClickCount();
         resetReactionTime = true;
         getSetClickTime();
+        // clickSuccessCount();
         // Clear timeout (for wall damage) (and for dispatchGhost loop) if ghost is clicked on
         clearTimeout(myTimeout);
         // Stop all ghost animations if they are still running from before the click
