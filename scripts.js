@@ -16,6 +16,7 @@ $(document).ready(function () {
     let clickSuccessCount = 0;
     let score = 0;
     let reactionTime = []; // Array of all player reaction times in ms
+    let resetReactionTime = true; // Decides if the click reaction time should be reset
     let noWallsLeft = false;
     let winImminentFlag = false;
     let timeCounter = 100;
@@ -83,16 +84,23 @@ $(document).ready(function () {
     // Award an extra 100 points for each inner layer of ring traversed due to the ghost moving more on the screen (increased difficulty to catch the ghost)
     const updateScore = () => {
         if (!wallIsDamaged) {
-            if (currentRing == 2) {
-                score += 100;
-            } else if (currentRing == 1) {
-                score += 200;
-            }
-            else if (currentRing == 0) {
-                score += 300;
-            }
+ 
+            // Tiers of scoring based on reaction time:
+            // 1) Below 1000 ms
+            // 2) Between 1000 and 1500 ms
+            // 3) Between 1500 and 1900 ms
+            // 4) More than 1900 ms
 
-            // score += reactionTime[reactionTime.length - 1]
+            const currentReactionTime = reactionTime[reactionTime.length - 1];
+
+            if (currentReactionTime <= 1000) {
+                score += 1500;
+            } else if (currentReactionTime > 1000 && currentReactionTime <= 1500 ) {
+                score += 750;
+            } else if (currentReactionTime > 1500 && currentReactionTime <= 1900 ) {
+                score += 350;
+            } 
+            // score += Math.ceil((1 / reactionTime[reactionTime.length - 1] * 100000))
 
             $('.myScore').text(score);
             // Create dynamic score update effect
@@ -102,6 +110,10 @@ $(document).ready(function () {
                 $('.myScore').css('color', 'darkslateblue');
                 $('.myScore').css('font-size', '1.4rem');
             }, 700);
+        } else {
+
+
+
         }
         // Reset wallIsDamaged flag to false
         wallIsDamaged = false;
@@ -171,6 +183,8 @@ $(document).ready(function () {
     // Function to spawn new/next white ghost
     // This functions dispatches a new ghost (and deals wall damage) every 2 seconds unless the ghost is clicked before 2 seconds is up. -> If the ghost is clicked before 2 seconds is up, the ghost (.rufus) click event listener will dispatch the next ghost
     const dispatchGhost = () => {
+
+        getSetClickTime();
 
         if (timeCounter > 0 || ghostTaunt === true) {
             let randGhostOpacity = (Math.random() * 0.4) + 0.1;
@@ -326,45 +340,53 @@ $(document).ready(function () {
     // Shakes the map when ghost is banished
     const shakeMap = (clickReactionTime) => {
     let playSpeed;
+    let magnitude;
 
         if (clickReactionTime < 1000) {
-            playSpeed = 1;
+            // playSpeed = 1;
+            magnitude = 3;
         } else if (clickReactionTime >= 1000 && clickReactionTime < 1500) {
-            playSpeed = 0.7;
+            // playSpeed = 0.7;
+            magnitude = 1.5;
         } else {
-            playSpeed = 0.5;
+            // playSpeed = 0.5;
+            magnitude = 0.5;
         }
 
         const timeline = gsap.timeline({ defaults: { duration: 0.02 } });
-        timeline.timeScale(playSpeed);
+        // timeline.timeScale(playSpeed);
 
         timeline
-        .to('.outer', { duration: 0.02, ease: "power2.out", x: +3 })
-        .to('.outer', { duration: 0.02, ease: "power2.out", x: -3 })
+        .to('.outer', { duration: 0.02, ease: "power2.out", x: +magnitude })
+        .to('.outer', { duration: 0.02, ease: "power2.out", x: -magnitude })
 
     }
  
-    // Sets and gets the player's click reaction time
-    const getClickTime = () => {
-        if (!tPrev) {
-            tPrev = tNow = new Date();
-        } else {
-            tNow = new Date();
-            const clickTime = Math.abs(tNow - tPrev - 2000);
-            reactionTime.push(clickTime);
-            console.log("Your click reaction time: ", clickTime, "ms");
-            shakeMap(clickTime);
-            tPrev = tNow;
+    // Sets and gets the player's click reaction time. Does not set if the ghost has just damaged a wall.
+    const getSetClickTime = () => {
+
+        if (resetReactionTime === true) {
+            if (!tPrev) {
+                tPrev = new Date();
+            } else {
+                tNow = new Date();
+                const clickTime = Math.abs(tNow - tPrev);
+                reactionTime.push(clickTime);
+                console.log("Your click reaction time: ", clickTime, "ms");
+                shakeMap(clickTime);
+                tPrev = tNow = undefined;
+            }
         }
+        
     }
 
     // Tracks how many times the player has clicked on the ghost successfully
     // For every 3 successful clicks, speed up the ghost
-    const successfulClickCount = () => {
-        getClickTime();
-        clickSuccessCount++;
-        console.log(clickSuccessCount);
-    }
+    // const successfulClickCount = () => {
+    //     getClickTime();
+    //     clickSuccessCount++;
+    //     console.log(clickSuccessCount);
+    // }
 
     // Function to invoke game over sequence (player lost)
     // Stops clock countdown, unbinds the click event listener from the ghost, and make the ghost dance around the screen.
@@ -498,6 +520,7 @@ $(document).ready(function () {
     // Highlights wall in red and then decrement its border width by damageAmt 
     function destroyWall(targetRing, targetBorder, damageAmt, dmgColor) {
         wallIsDamaged = true;
+        resetReactionTime = false;
         // Set border color to red momentarily for 400ms to signal wall damage
         $(`.${targetRing}`).css(`${targetBorder}-color`, dmgColor);
         setTimeout(function () {
@@ -542,7 +565,7 @@ $(document).ready(function () {
     // Refresh game on Start button click
     $('.startBtn').on('click', function (e) {
         e.preventDefault();
-        bgMusic.play();
+        // bgMusic.play();
         clearInterval(clock);
         clearTimeout(myTimeout);
         ghostTaunt = false;
@@ -570,7 +593,9 @@ $(document).ready(function () {
 
     $('.rufus').on('click', function () {
         ghostClickSound.play();
-        successfulClickCount();
+        // successfulClickCount();
+        resetReactionTime = true;
+        getSetClickTime();
         // Clear timeout (for wall damage) (and for dispatchGhost loop) if ghost is clicked on
         clearTimeout(myTimeout);
         // Stop all ghost animations if they are still running from before the click
