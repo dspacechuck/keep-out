@@ -17,12 +17,18 @@ $(document).ready(function () {
     let score = 0;
     let reactionTime = []; // Array of all player reaction times in ms
     let resetReactionTime = true; // Decides if the click reaction time should be reset
+    
+    // let randWall; // random wall that ghost will attack, 0 = top wall, 1 = right wall, 2 = bottom wall, 3 = left wall
+    
+    let randWalls = [0]; // matrix of random walls that the ghost(s) will attack,  0 = top wall, 1 = right wall, 2 = bottom wall, 3 = left wall
+    
     let noWallsLeft = false;
     let winImminentFlag = false;
     let timeCounter = 100;
     
     let ghostFadeInTime = 400;
-    let ghostTravelSpeed = 600;
+    // let ghostTravelSpeed = 600;
+    let ghostTravelTime = 2; // ghost travel time in seconds
     let wallDamageInterval = 1600;
 
     let clock;
@@ -42,6 +48,8 @@ $(document).ready(function () {
     // Track the current border that the ghost is adjacent to
     let currentBorder;
     
+    let ghostTimeline = gsap.timeline({paused: true});
+
     const ghostClickSound = new Audio('./assets/power_up_ray-mike_koenig-half.mp3');
     const bgMusic = new Audio('./assets/strange09speed.mp3');
 
@@ -59,6 +67,40 @@ $(document).ready(function () {
         }
     }
 
+    // Checks to see if keypress matches the current wall(s) that the ghost(s) are on
+    // Searches through the randWalls matrix 
+    const isKeyCorrect = (keyDir) => {
+        const randWallsIndex = randWalls.indexOf(keyDir);
+
+        // If the key pressed matches a wall in the matrix
+        if (randWallsIndex !== -1) {
+            clickSuccessCount++;
+            console.log("click success count: ", clickSuccessCount);
+            randWalls[randWallsIndex] = 999;
+            console.log("ghost banished");
+            dismissGhost();
+            ghostTimeline.pause();
+            ghostDispatchController();
+        }
+
+
+        // if (keyDir === randWall) {
+        //     console.log("ghost banished");
+
+
+        //     // randWall = undefined;
+        //     // randWalls = undefined;
+        //     console.log('randWall: ', randWalls);
+        //     dismissGhost();
+        //     ghostTimeline.pause();
+        //     // dispatchGhost();
+        //     // successfulClickCount();
+        //     ghostDispatchController();
+        //     // console.log("successful click count: ", successfulClickCount);
+
+        // }
+    }
+
     const bindArrowKeys = () => {
         document.addEventListener("keydown", (e) => {
             
@@ -66,24 +108,30 @@ $(document).ready(function () {
                 return;
             }
 
+            console.log("e: ", e);
+
             switch (e.key) {
-                case "ArrowDown":
+                case "ArrowDown": // wall = 2, keyCode = 40
                     console.log(e);
                     console.log("Arrow Down");
                     // console.log(ghostClickSound);
                     playClickSound();
+                    isKeyCorrect(2);
                     break;
-                case "ArrowUp":
+                case "ArrowUp": // wall = 0, keyCode = 38
                     console.log("Arrow Up");
                     playClickSound();
+                    isKeyCorrect(0);
                     break;
-                case "ArrowLeft":
+                case "ArrowLeft": // wall = 3, keyCode = 37
                     console.log("Arrow Left");
                     playClickSound();
+                    isKeyCorrect(3);
                     break;
                 case "ArrowRight":
-                    console.log("Arrow Right");
+                    console.log("Arrow Right"); // wall = 1, keyCode = 39
                     playClickSound();
+                    isKeyCorrect(1);
                     break;
             }
         })
@@ -225,26 +273,58 @@ $(document).ready(function () {
         }
     }
 
+    // Dismisses ghost 
+    const dismissGhost = () => {
+        // Stop all ghost animations if they are still running from before the click
+        $('.rufus').stop();
+        // Disables ghost immediately after user clicked on it (prevents multiple points scoring)
+        disableGhost(this);
+    }
+
     // Function to spawn new/next white ghost
     // This functions dispatches a new ghost (and deals wall damage) every 2 seconds unless the ghost is clicked before 2 seconds is up. -> If the ghost is clicked before 2 seconds is up, the ghost (.rufus) click event listener will dispatch the next ghost
-    const dispatchGhost = () => {
+    const dispatchGhost = (selectedWall) => {
+       
+        // selectedWall === -1 denotes first dispatch of game
+        // if (selectedWall === -1) {
+        //     selectedWall = Math.floor(Math.random() * 4);
+        // }
 
-        getSetClickTime();
+        // ghostTimeline.restart();
 
         if (timeCounter > 0 || ghostTaunt === true) {
             let randGhostOpacity = (Math.random() * 0.4) + 0.1;
+            
+            // $('.rufus').css('opacity', 0);
 
-            $('.rufus').animate({
-                opacity: randGhostOpacity,
-            }, ghostFadeInTime, function () {
+            gsap.set('.rufus', { opacity: 0 });
 
-            });
+ 
+
+            // const ghostRun = gsap.timeline({ defaults: { duration: 0.02 } });
+            // ghostRun.timeScale(playSpeed);
+            // ghostTimeline.play();
+            // ghostTimeline.seek(1);
+
+
+            // $('.rufus').animate({
+            //     opacity: randGhostOpacity,
+            // }, ghostFadeInTime, function () {
+
+            // });
 
             let randCoord;
             let randCoord2 = ringlen[2];
             // Generates and selects random wall to spawn ghost
             // 0 = top wall, 1 = right wall, 2 = bottom wall, 3 = left wall
-            let randWall = Math.floor(Math.random() * 4);
+            // randWall = Math.floor(Math.random() * 4);
+
+
+            getSetClickTime();
+            
+
+
+
 
             if (currentRing == 2) {
                 ghostXYSpawn = 65;
@@ -265,76 +345,102 @@ $(document).ready(function () {
                 ghostXYSpawn = 0;
             }
 
+            // test
+            // randWall = 0;
+
+            ghostTimeline.clear(true);
+
             // Assign ghost to appropriate wall (i.e. border) using randWall variable. randWall of 0 = top-border, randWall of 1 = right-border, randWall of 2 = bottom-border, randWall of 3 = left-border
-            if (randWall == 0) {
+            if (selectedWall == 0) {
                 $('.rufus').css('left', `${randCoord}px`);
                 $('.rufus').css('top', `${ringTrackWidth[2]}px`);
-                animateDown(ghostXYSpawn);
+
+                ghostTimeline.to('.rufus', { duration: 0.5, opacity: randGhostOpacity })
+                .to('.rufus', { y: ghostXYSpawn, duration: ghostTravelTime, stagger: 0.2, ease: "power2.out", delay: -0.5 });
+
+                // $('.rufus2').css('top', `${ringTrackWidth[2] - 80}px`);
+                // animateDown(ghostXYSpawn);
                 currentBorder = 'border-top';
-            } else if (randWall == 1) {
+            } else if (selectedWall == 1) {
                 $('.rufus').css('left', `${randCoord2}px`);
                 $('.rufus').css('top', `${randCoord}px`);
-                animateLeft(ghostXYSpawn);
+
+                ghostTimeline.to('.rufus', { duration: 0.5, opacity: randGhostOpacity })
+                .to('.rufus', { x: -ghostXYSpawn, duration: ghostTravelTime, stagger: 0.2, ease: "power2.out", delay: -0.5 });
+
+                // animateLeft(ghostXYSpawn);
+
                 currentBorder = 'border-right';
-            } else if (randWall == 2) {
+            } else if (selectedWall == 2) {
                 $('.rufus').css('left', `${randCoord}px`);
                 $('.rufus').css('top', `${randCoord2}px`);
-                animateUp(ghostXYSpawn);
+
+                ghostTimeline.to('.rufus', { duration: 0.5, opacity: randGhostOpacity })
+                .to('.rufus', { y: -ghostXYSpawn, duration: ghostTravelTime, stagger: 0.2, ease: "power2.out", delay: -0.5 });
+
+                // animateUp(ghostXYSpawn);
                 currentBorder = 'border-bottom';
-            } else if (randWall == 3) {
+            } else if (selectedWall == 3) {
                 $('.rufus').css('left', `${ringTrackWidth[2]}px`);
                 $('.rufus').css('top', `${randCoord}px`);
-                animateRight(ghostXYSpawn);
+
+                ghostTimeline.to('.rufus', { duration: 0.5, opacity: randGhostOpacity })
+                .to('.rufus', { x: ghostXYSpawn, duration: ghostTravelTime, stagger: 0.2, ease: "power2.out", delay: -0.5 });
+
+                // animateRight(ghostXYSpawn);
                 currentBorder = 'border-left';
             }
 
-            // Function to animate ghost down
-            function animateDown(locOffset) {
-                $('.rufus').animate({
-                    top: `${locOffset}`,
-                    left: "+=15",
-                }, ghostTravelSpeed, function () {
-                });
-            }
+            console.log("ghosttimeline: ", ghostTimeline)
+            ghostTimeline.play();   
 
-            // Function to animate ghost left
-            function animateLeft(locOffset) {
-                $('.rufus').animate({
-                    left: `-=${locOffset}`,
-                }, ghostTravelSpeed, function () {
-                });
-            }
+            // // Function to animate ghost down
+            // function animateDown(locOffset) {
+            //     $('.rufus').animate({
+            //         top: `${locOffset}`,
+            //         left: "+=15",
+            //     }, ghostTravelSpeed, function () {
+            //     });
+            // }
 
-            // Function to animate ghost up
-            function animateUp(locOffset) {
-                $('.rufus').animate({
-                    top: `-=${locOffset}`,
-                }, ghostTravelSpeed, function () {
-                });
-            }
+            // // Function to animate ghost left
+            // function animateLeft(locOffset) {
+            //     $('.rufus').animate({
+            //         left: `-=${locOffset}`,
+            //     }, ghostTravelSpeed, function () {
+            //     });
+            // }
 
-            // Function to animate ghost right
-            function animateRight(locOffset) {
-                $('.rufus').animate({
-                    left: `${locOffset}`,
-                }, ghostTravelSpeed, function () {
-                });
-            }
+            // // Function to animate ghost up
+            // function animateUp(locOffset) {
+            //     $('.rufus').animate({
+            //         top: `-=${locOffset}`,
+            //     }, ghostTravelSpeed, function () {
+            //     });
+            // }
 
-            // Render ghost visible for clicking
-            $('.rufus').css('visibility', 'visible');
-            $('.rufus').css('opacity', '0.5');
+            // // Function to animate ghost right
+            // function animateRight(locOffset) {
+            //     $('.rufus').animate({
+            //         left: `${locOffset}`,
+            //     }, ghostTravelSpeed, function () {
+            //     });
+            // }
 
-            // Inflict damage to the current wall ONLY if clock has not counted down to 0 during the time setTimeout is counting down to execute its own function.  
-            // Also, don't run wallDamage function if the ghost is only being dispatched for taunts
-            myTimeout = setTimeout(function () {
-                if (winImminentFlag === false) {
-                    if (ghostTaunt === false) {
-                        wallDamage(currentBorder, randWall);
-                    }
-                    dispatchGhost();
-                }
-            }, wallDamageInterval);
+            // // Render ghost visible for clicking
+            // $('.rufus').css('visibility', 'visible');
+            // $('.rufus').css('opacity', '0.5');
+
+            // // Inflict damage to the current wall ONLY if clock has not counted down to 0 during the time setTimeout is counting down to execute its own function.  
+            // // Also, don't run wallDamage function if the ghost is only being dispatched for taunts
+            // myTimeout = setTimeout(function () {
+            //     if (winImminentFlag === false) {
+            //         if (ghostTaunt === false) {
+            //             wallDamage(currentBorder, randWall);
+            //         }
+            //         dispatchGhost();
+            //     }
+            // }, wallDamageInterval);
         }
     }
 
@@ -404,6 +510,7 @@ $(document).ready(function () {
         timeline
         .to('.outer', { duration: 0.02, ease: "power2.out", x: +magnitude })
         .to('.outer', { duration: 0.02, ease: "power2.out", x: -magnitude })
+        .clear(true);
 
     }
  
@@ -425,22 +532,49 @@ $(document).ready(function () {
         
     }
 
-    // Tracks how many times the player has clicked on the ghost successfully
-    // Progressively increases the difficulty of the game accordingly
-    const successfulClickCount = () => {
-        clickSuccessCount++;
-        console.log(clickSuccessCount);
-        if (clickSuccessCount % 3 === 0) {
-            ghostFadeInTime /= 2;
-            console.log("ghost fade-in time: ", ghostFadeInTime);
+    const randWallGenerator = (randWallMatrix) => {
+        // const randWall = Math.floor(Math.random() * 4);
+
+        for (let i = 0; i < randWallMatrix.length; i++) {
+            randWallMatrix[i] = Math.floor(Math.random() * 4);
         }
 
+        // randWallMatrix[0] === Math.floor...Math
+        // randWallMatrix[1] === Math.floor...
+
+        console.log("rand wall matrix: ", randWallMatrix);
+    }
+
+    // Tracks how many times the player has clicked on the ghost successfully
+    // Progressively increases the difficulty of the game accordingly
+    const ghostDispatchController = () => {
+        // clickSuccessCount++;
+        // console.log("click success count: ", clickSuccessCount);
+        // if (clickSuccessCount % 3 === 0) {
+            
+        //     ghostFadeInTime /= 2;
+        //     console.log("ghost fade-in time: ", ghostFadeInTime);
+        // }
+
         if (clickSuccessCount % 4 === 0) {
-            ghostTravelSpeed /= 2;
-            console.log("ghost travel speed: ", ghostTravelSpeed);
-            wallDamageInterval -= 150;
-            console.log("wall damage interval: ", wallDamageInterval);
+            // ghostTravelSpeed /= 2;
+            ghostTravelTime = ghostTravelTime - (ghostTravelTime/10);
+            console.log("ghost travel time: ", ghostTravelTime);           
+            // wallDamageInterval -= 150;
+            // console.log("wall damage interval: ", wallDamageInterval);
         }
+
+
+        // Calls ghost dispatch. Max 6 ghosts at a time. dispatch a new ghost for every 6 successful banishes
+        if (clickSuccessCount % 6 === 0 && randWalls.length < 6) {
+            randWalls.push(0); // increase the randWalls matrix by 1
+        } 
+
+        randWallGenerator(randWalls); // populate the matrix of random walls with wall directions
+        randWalls.forEach((entry) => {
+            dispatchGhost(entry);
+        })
+        console.log("the random walls matrix: ", randWalls);
     }
 
     // Function to invoke game over sequence (player lost)
@@ -644,30 +778,31 @@ $(document).ready(function () {
         countdownTimer();
         enableCat();
         enableGhost($('.rufus'));
-        dispatchGhost();
+        // dispatchGhost(-1);
+        ghostDispatchController();
     });
 
     $('.rufus').on('click', function () {
-        ghostClickSound.play();
-        successfulClickCount();
-        resetReactionTime = true;
-        getSetClickTime();
-        // clickSuccessCount();
-        // Clear timeout (for wall damage) (and for dispatchGhost loop) if ghost is clicked on
-        clearTimeout(myTimeout);
-        // Stop all ghost animations if they are still running from before the click
-        $('.rufus').stop();
-        // Disables ghost immediately after user clicked on it (prevents multiple points scoring)
-        disableGhost(this);
+        // ghostClickSound.play();
+        // successfulClickCount();
+        // resetReactionTime = true;
+        // getSetClickTime();
+        // // clickSuccessCount();
+        // // Clear timeout (for wall damage) (and for dispatchGhost loop) if ghost is clicked on
+        // clearTimeout(myTimeout);
+        // // Stop all ghost animations if they are still running from before the click
+        // $('.rufus').stop();
+        // // Disables ghost immediately after user clicked on it (prevents multiple points scoring)
+        // disableGhost(this);
 
-        // Dispatch the next ghost after 1500ms if the time counter has not run down to 0 and if there are still walls left
-        if (timeCounter > 0 && !noWallsLeft) {
-            myTimeout = setTimeout(function () {
-                dispatchGhost();
-            }, 1500);
-        }
-        // Performs checking to see if user clicked on ghost before wall breached and then Update current score
-        updateScore();
+        // // Dispatch the next ghost after 1500ms if the time counter has not run down to 0 and if there are still walls left
+        // if (timeCounter > 0 && !noWallsLeft) {
+        //     myTimeout = setTimeout(function () {
+        //         dispatchGhost();
+        //     }, 1500);
+        // }
+        // // Performs checking to see if user clicked on ghost before wall breached and then Update current score
+        // updateScore();
     });
 
 });
