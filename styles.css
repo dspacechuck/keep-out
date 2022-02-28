@@ -56,6 +56,11 @@ body {
   /* border: 5px solid red; */
 }
 
+/* Hides ghost from rendering unless rendered by Matter.js */
+svg {
+  display: none;
+}
+
 /* Game stats info panel*/
 .infoPanel {
   display: flex;
