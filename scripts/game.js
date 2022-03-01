@@ -2,11 +2,107 @@ import { renderConfig, groundOptions } from './config.js';
 
 const { Body, Bodies, Common, Composite, Composites, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Svg, World, Runner } = Matter;
 
-// Common.setDecomp();
+const levels = [
+    {
+        level: 1,
+        ghost: {
+            easy: 1,
+            mid: 0,
+            hard: 0
+        },
+        ball: {
+            radius: 1,
+            restitution: 1,
+            inertia: 5,
+        },
+        platforms: 1,
+        timer: 60,
+        greeting: 'Are you ready to banish some ghosts?',
+        completeString: 'Great job!'
+    },
+    {
+        level: 2,
+        ghost: {
+            easy: 0,
+            mid: 1,
+            hard: 0
+        },
+        ball: {
+            radius: 1,
+            restitution: 1,
+            inertia: 5,
+        },
+        platforms: 3,
+        timer: 60,
+        greeting: 'Who are you gonna call?',
+        completeString: 'Level 2 complete!'
+    },
+    {
+        level: 3,
+        ghost: {
+            easy: 0,
+            mid: 0,
+            hard: 1
+        },
+        ball: {
+            radius: 0.5,
+            restitution: 1,
+            inertia: 5,
+        },
+        platforms: 5,
+        timer: 60,
+        greeting: 'Not so easy now!',
+        completeString: 'Well Done!'
+    }
+];
 
-// Common.setDecomp('poly-decomp');
+const ghostLevels = [
+    {
+        level: 1,
+        label: 'easy',
+        ghostName: 'Rufus',
+        hitsRequired: 1,
+        restitution: 1,
+        reactiveLevel: 0,
+        canMove: false, 
+        copyInterval: -1,
+        vanishCounts: -1,
+        taunt: `Can't get me!`,
+        imgPath: '',
+        svgPath: '',
+    },
+    {
+        level: 2,
+        label: 'mid',
+        ghostName: 'Twinko',
+        hitsRequired: 2,
+        restitution: 1,
+        reactiveLevel: 0,
+        canMove: false, 
+        copyInterval: 20,
+        vanishCounts: -1,
+        help: 'Twinko the ghost requires two hits to banish and has a secret trick up its sleeve.',
+        taunt: `Can't get me!`,
+        imgPath: '',
+        svgPath: '',
+    },
+    {
+        level: 3,
+        label: 'hard',
+        ghostName: 'Drako',
+        hitsRequired: 3,
+        restitution: 1,
+        reactiveLevel: 1,
+        canMove: true, 
+        copyInterval: 0,
+        vanishCounts: 3, 
+        taunt: `Drako the ghost requires three hits to banish. Watch out for this sneaky ghost!`,
+        imgPath: '',
+        svgPath: '',
+    },
+];
 
-// console.log(Common.setDecomp)
+
 
 const gameCanvas = document.querySelector('.game');
 const engine = Engine.create();
@@ -28,11 +124,13 @@ const render = Render.create({
 // ctx.arc(95, 50, 40, 0, 2 * Math.PI);
 // ctx.stroke();
 
-const game = {};
+const addElements = (param) => {
 
+    if (param == 'setup') {
 
-game.addElements = () => {
-    // Bodies
+    }
+
+    // Bodies and body-supporting functions
     const groundPlane = Bodies.rectangle(150, 890, 300, 20, groundOptions);
     const platform = Bodies.rectangle(650, 300, 150, 20, groundOptions);
     const stack = Composites.stack(640, 50, 1, 4, 0, 0, (x, y) => {
@@ -54,105 +152,62 @@ game.addElements = () => {
 
     console.log(ball);
 
-    // Maps SVG ghost to body
-    const ghost = [...document.querySelectorAll("svg > path")]
-        .map(path => {
-        const body = Matter.Bodies.fromVertices(
-        100, 80, Matter.Svg.pathToVertices(path), {
-                restitution: 0, 
-                render: {
-                    sprite: {
-                        texture: './assets/ghost-freepik.png',
-                        // texture: './assets/soccer-ball.png',
-                        xScale: 0.21,
-                        yScale: 0.21
+    // load a svg file and parse it with image/svg+xml params
+    const loadSvg = (filePath) => {
+        return fetch(filePath)
+            .then((res) => { return res.text(); })
+            .then((raw) => { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
+    };
+
+    // 
+    var select = function(root, selector) {
+        console.log(Array.prototype.slice.call(root.querySelectorAll(selector)))
+        return Array.prototype.slice.call(root.querySelectorAll(selector));
+    };
+
+
+    const addAGhost = () => {
+        ([
+            './assets/ghost-freepik-inkscape-svg.svg', 
+        ]).forEach(function(path, i) { 
+            console.log("Path and i below");
+            console.log(path);
+            console.log(i);
+           
+            loadSvg(path).then(function(root) {
+     
+                const vertexSets = select(root, 'path')
+                    .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.2, 0.2); });
+    
+                const ghost1 = Composite.add(engine.world, Bodies.fromVertices(i +30, i + 30, vertexSets, {
+                    render: {
+                        fillStyle: 'red',
+                        strokeStyle: '#f19648',
+                        lineWidth: 1,
+                        sprite: {
+                            texture: './assets/ghost-freepik.png',
+                            xScale: 0.21,
+                            yScale: 0.21
+                        }
                     }
-                },
-                wireframes: true
-            },
-            true
-        );
-        Matter.Body.scale(body, 0.2, 0.2);
-        console.log(body)
-        return body;
-    })
+                }, true));
+    
+                console.log(ghost1);
+            });
+        });
+    }
+    
+    addAGhost();
+    
+    console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
 
-    // const bodyVertices = [
-    //     { x: 9, y: 72 },
-    //     { x: 3, y: 78 },
-    //     { x: 4, y: 93 },
-    //     { x: 18, y: 98 },
-    //     { x: 33, y: 98 },
-    //     { x: 17, y: 77 },
-    //     { x: 293, y: 59 },
-    //     { x: 286, y: 56 },
-    //     { x: 293, y: 64 },
-    //     { x: 319, y: 94 },
-    //     { x: 297, y: 72 },
-    //     { x: 269, y: 99 },
-    //     { x: 319, y: 98 },
-    //     { x: 20, y: 65 },
-    //     { x: 17, y: 77 },
-    //     { x: 33, y: 98 },
-    //     { x: 85, y: 103 },
-    //     { x: 145, y: 102 },
-    //     { x: 26, y: 63 },
-    //     { x: 315, y: 77 },
-    //     { x: 309, y: 73 },
-    //     { x: 297, y: 72 },
-    //     { x: 316, y: 91 },
-    //     { x: 124, y: 9 },
-    //     { x: 108, y: 36 },
-    //     { x: 145, y: 102 },
-    //     { x: 240, y: 13 },
-    //     { x: 217, y: 5 },
-    //     { x: 189, y: 1 },
-    //     { x: 155, y: 2 },
-    //     { x: 137, y: 5 },
-    //     { x: 32, y: 54 },
-    //     { x: 26, y: 63 },
-    //     { x: 145, y: 102 },
-    //     { x: 108, y: 36 },
-    //     { x: 97, y: 35 },
-    //     { x: 78, y: 37 },
-    //     { x: 48, y: 45 },
-    //     { x: 269, y: 99 },
-    //     { x: 297, y: 72 },
-    //     { x: 269, y: 33 },
-    //     { x: 263, y: 31 },
-    //     { x: 145, y: 102 },
-    //     { x: 218, y: 103 },
-    //     { x: 293, y: 64 },
-    //     { x: 286, y: 56 },
-    //     { x: 297, y: 72 },
-    //     { x: 240, y: 13 },
-    //     { x: 145, y: 102 },
-    //     { x: 263, y: 31 },
-    //     { x: 253, y: 22 },
-    //     { x: 145, y: 102 },
-    //     { x: 154, y: 105 },
-    //     { x: 201, y: 105 },
-    //     { x: 201, y: 103 },
-    //   ];
-
-    // const ghost = Matter.Bodies.fromVertices(
-    //     80, 280, bodyVertices, {
-    //             restitution: 0, 
-    //             render: {
-    //                 sprite: {
-    //                     // texture: './assets/ghost-freepik.png'
-    //                 }
-    //             },
-    //             wireframes: true
-    //         },
-    //         true
-    //     );
+ 
 
     
 
 
 
-    console.log(ghost);
+    // console.log(ghost);
 
 
 
@@ -239,18 +294,20 @@ game.addElements = () => {
 
     // console.log(Events);
 
-    World.add(engine.world, [groundPlane, platform, mouseConstraint, stack, ball, ghost[0]]);
+    World.add(engine.world, [groundPlane, platform, mouseConstraint, stack]);
+        // ghost[0]]
+        // );
 
 
 }
 
-game.run = () => {
+const runGame = () => {
     Runner.run(engine);
     Render.run(render);
 }
 
 
 
-game.addElements();
-// game.addDetector();
-game.run();
+addElements();
+// addDetector();
+runGame();
