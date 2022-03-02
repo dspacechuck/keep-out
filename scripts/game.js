@@ -10,12 +10,25 @@ const levels = [
             mid: 0,
             hard: 0
         },
+        slingProps: {
+            x: 300,
+            y: 700,
+            k: 0.02
+        },
         ball: {
-            radius: 1,
+            radius: 20,
             restitution: 1,
             inertia: 5,
         },
-        platforms: 1,
+        platforms: [
+            {
+                x: 650,
+                y: 300,
+                width: 150,
+                height: 20,
+                restitution: 0
+            }
+        ],
         timer: 60,
         greeting: 'Are you ready to banish some ghosts?',
         completeString: 'Great job!'
@@ -27,12 +40,32 @@ const levels = [
             mid: 1,
             hard: 0
         },
+        slingProps: {
+            x: 300,
+            y: 500,
+            k: 0.02
+        },
         ball: {
-            radius: 1,
+            radius: 20,
             restitution: 1,
             inertia: 5,
         },
-        platforms: 3,
+        platforms: [
+            {
+                x: 250,
+                y: 300,
+                width: 150,
+                height: 20,
+                restitution: 0.5
+            },
+            {
+                x: 800,
+                y: 300,
+                width: 150,
+                height: 20,
+                restitution: 0.5
+            }
+        ],
         timer: 60,
         greeting: 'Who are you gonna call?',
         completeString: 'Level 2 complete!'
@@ -44,12 +77,25 @@ const levels = [
             mid: 0,
             hard: 1
         },
+        slingProps: {
+            x: 20,
+            y: 200,
+            k: 0.02
+        },
         ball: {
             radius: 0.5,
             restitution: 1,
             inertia: 5,
         },
-        platforms: 5,
+        platforms: [
+            {
+                x: 650,
+                y: 300,
+                width: 150,
+                height: 20,
+                restitution: 1
+            }
+        ],
         timer: 60,
         greeting: 'Not so easy now!',
         completeString: 'Well Done!'
@@ -124,7 +170,7 @@ const bodies = {
     sling: null,
     ball: null, 
     groundPlane: null,
-    platform: null
+    platforms: []
 }
 
 // Define controls
@@ -133,6 +179,84 @@ const controls = {
     mouseConstraint: null,
     firing: null
 }
+
+// Function to add a sling to the world
+const createSling = (levelParam) => {
+    let { 
+        mouse, 
+        mouseConstraint, 
+        firing 
+    } = controls;
+
+    let {
+        sling,
+        ball,
+        groundPlane,
+        platforms
+    } = bodies;
+    
+    const ballProps = levelParam.ball;
+    const slingProps = levelParam.slingProps;
+
+    // Mouse
+    mouse = Mouse.create(render.canvas);
+    mouseConstraint = MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+            render: { visible: false }
+        }
+    });
+
+    // Bodies and body-supporting functions
+    ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, {
+        restitution: 1, 
+        render: {
+            sprite: {
+                // texture: './assets/ghost-freepik.png',
+                xScale: 0.2,
+                yScale: 0.2
+            }
+        }
+    });
+    sling = Constraint.create({
+        pointA: {x: slingProps.x, y: slingProps.y},
+        bodyB: ball,
+        stiffness: slingProps.k
+    });
+    Events.on(mouseConstraint, 'enddrag', (e) => {
+        if (e.body === ball) {
+            firing = true;
+        }
+    })
+    Events.on(engine, 'afterUpdate', () => {
+        if (firing && Math.abs(ball.position.x - slingProps.x) < 40 && Math.abs(ball.position.y - slingProps.y) < 40) {
+            ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius);
+            World.add(engine.world, ball);
+            sling.bodyB = ball;
+            firing = false;
+        }  
+    });
+    World.add(engine.world, [ball, mouseConstraint, sling]);
+}
+
+// Function to add platforms to the world
+const addPlatforms = (levelParam) => {
+    let {
+        platforms
+    } = bodies
+
+    const platformsArr = levelParam.platforms;
+
+    // Creates one platform for each array entry in platformsArr,
+    // then pushes this array of created platforms to bodies.platforms
+    platformsArr.forEach(({x, y, width, height, restitution}) => {
+        const currPlatform = Bodies.rectangle(x, y, width, height, groundOptions);
+        platforms.push(currPlatform);
+    })
+
+    World.add(engine.world, platforms);
+}
+
 
 // Function to add elements to the world
 const addElements = () => {
@@ -146,36 +270,38 @@ const addElements = () => {
         sling,
         ball,
         groundPlane,
-        platform
+        platforms
     } = bodies;
     
     // Mouse
-    mouse = Mouse.create(render.canvas);
-    mouseConstraint = MouseConstraint.create(engine, {
-        mouse: mouse,
-        constraint: {
-            render: { visible: false }
-        }
-    });
+    // mouse = Mouse.create(render.canvas);
+    // mouseConstraint = MouseConstraint.create(engine, {
+    //     mouse: mouse,
+    //     constraint: {
+    //         render: { visible: false }
+    //     }
+    // });
 
     // Bodies and body-supporting functions
     groundPlane = Bodies.rectangle(150, 890, 300, 20, groundOptions);
-    platform = Bodies.rectangle(650, 300, 150, 20, groundOptions);
-    ball = Bodies.circle(300, 600, 30, {
-        restitution: 1, 
-        render: {
-            sprite: {
-                // texture: './assets/ghost-freepik.png',
-                xScale: 0.2,
-                yScale: 0.2
-            }
-        }
-    });
-    sling = Constraint.create({
-        pointA: {x: 300, y: 600},
-        bodyB: ball,
-        stiffness: 0.02
-    });
+
+    // platform = Bodies.rectangle(650, 300, 150, 20, groundOptions);
+
+    // ball = Bodies.circle(300, 600, 20, {
+    //     restitution: 1, 
+    //     render: {
+    //         sprite: {
+    //             // texture: './assets/ghost-freepik.png',
+    //             xScale: 0.2,
+    //             yScale: 0.2
+    //         }
+    //     }
+    // });
+    // sling = Constraint.create({
+    //     pointA: {x: 300, y: 600},
+    //     bodyB: ball,
+    //     stiffness: 0.02
+    // });
 
 
 
@@ -204,7 +330,7 @@ const addElements = () => {
             loadSvg(path).then(function(root) {
      
                 const vertexSets = select(root, 'path')
-                    .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.2, 0.2); });
+                    .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
     
                 const ghost1 = Composite.add(engine.world, Bodies.fromVertices(i +30, i + 30, vertexSets, {
                     render: {
@@ -213,8 +339,8 @@ const addElements = () => {
                         lineWidth: 1,
                         sprite: {
                             texture: './assets/ghost-freepik.png',
-                            xScale: 0.21,
-                            yScale: 0.21
+                            xScale: 0.15,
+                            yScale: 0.15
                         }
                     }
                 }, true));
@@ -233,85 +359,64 @@ const addElements = () => {
 
 
 
-    // Create collision detector
-    const crashDetector = Detector.create({
-        bodies: [ball, groundPlane]
-    });
+    // // Create collision detector
+    // const crashDetector = Detector.create({
+    //     bodies: [ball, groundPlane]
+    // });
     
-    // Collision bodies to detect
-    const colBodies = Detector.setBodies(crashDetector, [ball, groundPlane]);
+    // // Collision bodies to detect
+    // const colBodies = Detector.setBodies(crashDetector, [ball, groundPlane]);
     
-    // Collision array
-    const collisions = Detector.collisions(crashDetector);
+    // // Collision array
+    // const collisions = Detector.collisions(crashDetector);
 
+    // const mouseSetElement = Mouse.setElement(mouse, document.querySelector('.game'));
 
-    // console.log(crashDetector);
-    // console.log(collisions);
-    // console.log("collision bodies: ", colBodies);
+    // // console.log(mouseSetElement);
 
+    // const startBtn = document.querySelector('.startBtn');
 
-    const mouseSetElement = Mouse.setElement(mouse, document.querySelector('.game'));
-
-    // console.log(mouseSetElement);
-
-    const startBtn = document.querySelector('.startBtn');
-
-    //Test function: uses Start button to launch ball upwards
-    startBtn.addEventListener('click', () => {
-        const bodyAddForce = Body.applyForce(bodies.ball, bodies.ball.position, { x: 0, y: -0.1 });
-        console.log("body add force: ", bodyAddForce);
+    // //Test function: uses Start button to launch ball upwards
+    // startBtn.addEventListener('click', () => {
+    //     const bodyAddForce = Body.applyForce(bodies.ball, bodies.ball.position, { x: 0, y: -0.1 });
+    //     console.log("body add force: ", bodyAddForce);
         
-        // Detects if two objects have collided
-        console.log("collision? ", Matter.SAT?.collides(ball, groundPlane).collided);
-    })
+    //     // Detects if two objects have collided
+    //     console.log("collision? ", Matter.SAT?.collides(ball, groundPlane).collided);
+    // })
 
-    //Test function: detects collisions
-    // Events.on(engine, 'collisionStart', (e) => {
+  
+
+    // Events
+    // Events.on(mouseConstraint, 'enddrag', (e) => {
+    //     if (e.body === ball) {
+    //         firing = true;
+    //     }
+    // })
+    
+    // Events.on(engine, 'afterUpdate', () => {
+    //     if (firing && Math.abs(ball.position.x - 300) < 40 && Math.abs(ball.position.y - 600) < 40) {
+    //         ball = Bodies.circle(300, 600, 20);
+    //         World.add(engine.world, ball);
+    //         sling.bodyB = ball;
+    //         firing = false;
+    //     }  
+    // });
+
+    // Events.on(engine, 'collisionEnd', (e) => {
     //     if (!!SAT.collides(ball, groundPlane)?.collided) {
-    //         console.log("collision");
+    //         // console.log("collision");
     //     }
     //     // console.log("there is a collision");
 
     //     let pairs = e.pairs;
-    //     console.log(e);
+    //     // console.log(e);
 
     //     pairs.forEach(pair => {
-    //         pair.bodyA.render.fillStyle = '#333';
+    //         pair.bodyA.render.fillStyle = 'red';
     //         // pair.bodyB.render.fillStyle = '#333';
     //     })
     // })
-
-
-    // Events
-    Events.on(mouseConstraint, 'enddrag', (e) => {
-        if (e.body === ball) {
-            firing = true;
-        }
-    })
-    
-    Events.on(engine, 'afterUpdate', () => {
-        if (firing && Math.abs(ball.position.x - 300) < 40 && Math.abs(ball.position.y - 600) < 40) {
-            ball = Bodies.circle(300, 600, 30);
-            World.add(engine.world, ball);
-            sling.bodyB = ball;
-            firing = false;
-        }  
-    });
-
-    Events.on(engine, 'collisionEnd', (e) => {
-        if (!!SAT.collides(ball, groundPlane)?.collided) {
-            // console.log("collision");
-        }
-        // console.log("there is a collision");
-
-        let pairs = e.pairs;
-        // console.log(e);
-
-        pairs.forEach(pair => {
-            pair.bodyA.render.fillStyle = 'red';
-            // pair.bodyB.render.fillStyle = '#333';
-        })
-    })
 
     // Events.on(mouseConstraint, 'startDrag', (e) => {
     //     // console.log(e);
@@ -323,11 +428,28 @@ const addElements = () => {
 
 
     // Add items to world
-    World.add(engine.world, [groundPlane, ball, platform, mouseConstraint, sling]);
+    World.add(engine.world, [groundPlane]);
         // ghost[0]]
         // );
 
 
+}
+
+// Function to add all generated items to the world
+const addObjs = () => {
+    // let { 
+    //     mouse, 
+    //     mouseConstraint, 
+    //     firing 
+    // } = controls;
+
+    // let {
+    //     sling,
+    //     ball,
+    //     groundPlane,
+    //     platform
+    // } = bodies;
+    // World.add(engine.world, [groundPlane, ball, platform, mouseConstraint, sling]);
 }
 
 const runGame = () => {
@@ -335,8 +457,17 @@ const runGame = () => {
     Render.run(render);
 }
 
+console.log("level 1");
+console.log(levels[0]);
 
+// params: x, y, radius, restitution, inertia
+createSling(levels[0]);
+addPlatforms(levels[1]);
 
+// params: 
 addElements();
 // addDetector();
+
+// add all objects to the world
+addObjs();
 runGame();
