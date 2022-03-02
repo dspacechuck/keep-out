@@ -1,6 +1,6 @@
 import { renderConfig, groundOptions } from './config.js'; 
 
-const { Body, Bodies, Common, Composite, Composites, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Svg, World, Runner } = Matter;
+const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Svg, World, Runner } = Matter;
 
 const levels = [
     {
@@ -68,8 +68,8 @@ const ghostLevels = [
         copyInterval: -1,
         vanishCounts: -1,
         taunt: `Can't get me!`,
-        imgPath: '',
-        svgPath: '',
+        imgPath: './assets/ghost-freepik.png',
+        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
     },
     {
         level: 2,
@@ -83,8 +83,8 @@ const ghostLevels = [
         vanishCounts: -1,
         help: 'Twinko the ghost requires two hits to banish and has a secret trick up its sleeve.',
         taunt: `Can't get me!`,
-        imgPath: '',
-        svgPath: '',
+        imgPath: './assets/ghost-freepik-yellow.png',
+        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
     },
     {
         level: 3,
@@ -97,13 +97,13 @@ const ghostLevels = [
         copyInterval: 0,
         vanishCounts: 3, 
         taunt: `Drako the ghost requires three hits to banish. Watch out for this sneaky ghost!`,
-        imgPath: '',
-        svgPath: '',
+        imgPath: './assets/ghost-freepik-green.png',
+        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
     },
 ];
 
 
-
+// Setup game
 const gameCanvas = document.querySelector('.game');
 const engine = Engine.create();
 const render = Render.create({
@@ -119,39 +119,67 @@ const render = Render.create({
     }
 }); 
 
-// let ctx = gameCanvas.getContext("2d");
-// ctx.beginPath();
-// ctx.arc(95, 50, 40, 0, 2 * Math.PI);
-// ctx.stroke();
+// Define bodies
+const bodies = {
+    sling: null,
+    ball: null, 
+    groundPlane: null,
+    platform: null
+}
 
-const addElements = (param) => {
+// Define controls
+const controls = {
+    mouse: null,
+    mouseConstraint: null,
+    firing: null
+}
 
-    if (param == 'setup') {
+// Function to add elements to the world
+const addElements = () => {
+    let { 
+        mouse, 
+        mouseConstraint, 
+        firing 
+    } = controls;
 
-    }
+    let {
+        sling,
+        ball,
+        groundPlane,
+        platform
+    } = bodies;
+    
+    // Mouse
+    mouse = Mouse.create(render.canvas);
+    mouseConstraint = MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+            render: { visible: false }
+        }
+    });
 
     // Bodies and body-supporting functions
-    const groundPlane = Bodies.rectangle(150, 890, 300, 20, groundOptions);
-    const platform = Bodies.rectangle(650, 300, 150, 20, groundOptions);
-    const stack = Composites.stack(640, 50, 1, 4, 0, 0, (x, y) => {
-        return Bodies.polygon(x, y, 4, 20, {
-            restitution: 1
-        });
-    })
-    const ball = Bodies.circle(200, 300, 30, {
+    groundPlane = Bodies.rectangle(150, 890, 300, 20, groundOptions);
+    platform = Bodies.rectangle(650, 300, 150, 20, groundOptions);
+    ball = Bodies.circle(300, 600, 30, {
         restitution: 1, 
         render: {
             sprite: {
-                // texture: './assets/soccer-ball.png',
                 // texture: './assets/ghost-freepik.png',
                 xScale: 0.2,
                 yScale: 0.2
             }
         }
     });
+    sling = Constraint.create({
+        pointA: {x: 300, y: 600},
+        bodyB: ball,
+        stiffness: 0.02
+    });
 
-    console.log(ball);
 
+
+    
     // load a svg file and parse it with image/svg+xml params
     const loadSvg = (filePath) => {
         return fetch(filePath)
@@ -164,7 +192,6 @@ const addElements = (param) => {
         console.log(Array.prototype.slice.call(root.querySelectorAll(selector)))
         return Array.prototype.slice.call(root.querySelectorAll(selector));
     };
-
 
     const addAGhost = () => {
         ([
@@ -198,20 +225,12 @@ const addElements = (param) => {
     }
     
     addAGhost();
-    
+    // addSlingshot();    
+
     console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
 
  
 
-    
-
-
-
-    // console.log(ghost);
-
-
-
-    // console.log("stack: ", stack);
 
 
     // Create collision detector
@@ -230,14 +249,7 @@ const addElements = (param) => {
     // console.log(collisions);
     // console.log("collision bodies: ", colBodies);
 
-    // Mouse
-    const mouse = Mouse.create(render.canvas);
-    const mouseConstraint = MouseConstraint.create(engine, {
-        mouse: mouse,
-        constraint: {
-            render: { visible: false }
-        }
-    });
+
     const mouseSetElement = Mouse.setElement(mouse, document.querySelector('.game'));
 
     // console.log(mouseSetElement);
@@ -246,7 +258,7 @@ const addElements = (param) => {
 
     //Test function: uses Start button to launch ball upwards
     startBtn.addEventListener('click', () => {
-        const bodyAddForce = Body.applyForce(ball, ball.position, { x: 0, y: -0.1 });
+        const bodyAddForce = Body.applyForce(bodies.ball, bodies.ball.position, { x: 0, y: -0.1 });
         console.log("body add force: ", bodyAddForce);
         
         // Detects if two objects have collided
@@ -269,6 +281,23 @@ const addElements = (param) => {
     //     })
     // })
 
+
+    // Events
+    Events.on(mouseConstraint, 'enddrag', (e) => {
+        if (e.body === ball) {
+            firing = true;
+        }
+    })
+    
+    Events.on(engine, 'afterUpdate', () => {
+        if (firing && Math.abs(ball.position.x - 300) < 40 && Math.abs(ball.position.y - 600) < 40) {
+            ball = Bodies.circle(300, 600, 30);
+            World.add(engine.world, ball);
+            sling.bodyB = ball;
+            firing = false;
+        }  
+    });
+
     Events.on(engine, 'collisionEnd', (e) => {
         if (!!SAT.collides(ball, groundPlane)?.collided) {
             // console.log("collision");
@@ -284,17 +313,17 @@ const addElements = (param) => {
         })
     })
 
-    Events.on(mouseConstraint, 'startDrag', (e) => {
-        // console.log(e);
-        if (e.body === ball) {
-            // console.log("ended drag on a body: ", e.body);
-            // console.log(e.body);
-        }
-    })
+    // Events.on(mouseConstraint, 'startDrag', (e) => {
+    //     // console.log(e);
+    //     if (e.body === ball) {
+    //         // console.log("ended drag on a body: ", e.body);
+    //         // console.log(e.body);
+    //     }
+    // })
 
-    // console.log(Events);
 
-    World.add(engine.world, [groundPlane, platform, mouseConstraint, stack]);
+    // Add items to world
+    World.add(engine.world, [groundPlane, ball, platform, mouseConstraint, sling]);
         // ghost[0]]
         // );
 
