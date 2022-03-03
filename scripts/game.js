@@ -1,14 +1,19 @@
 import { renderConfig, groundOptions } from './config.js'; 
 
-const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Svg, World, Runner } = Matter;
+const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
 const levels = [
     {
         level: 1,
         ghost: {
-            easy: 1,
-            mid: 0,
-            hard: 0
+            easy: [
+                {
+                    x: 650,
+                    y: 300
+                }
+            ],
+            mid: [],
+            hard: []
         },
         slingProps: {
             x: 300,
@@ -24,7 +29,7 @@ const levels = [
             {
                 x: 650,
                 y: 300,
-                width: 150,
+                width: 100,
                 height: 20,
                 restitution: 0
             }
@@ -37,7 +42,12 @@ const levels = [
         level: 2,
         ghost: {
             easy: 0,
-            mid: 1,
+            mid: [
+                {
+                    x: 250,
+                    y: 300
+                }
+            ],
             hard: 0
         },
         slingProps: {
@@ -75,7 +85,12 @@ const levels = [
         ghost: {
             easy: 0,
             mid: 0,
-            hard: 1
+            hard: [
+                {
+                    x: 650,
+                    y: 300
+                }
+            ],
         },
         slingProps: {
             x: 20,
@@ -168,9 +183,11 @@ const render = Render.create({
 // Define bodies
 const bodies = {
     sling: null,
+    prevBalls: [],
     ball: null, 
     groundPlane: null,
-    platforms: []
+    platforms: [],
+    ghost: null
 }
 
 // Define controls
@@ -180,7 +197,44 @@ const controls = {
     firing: null
 }
 
-// Function to add a sling to the world
+// Setup bitmasks for collision filter
+const solid = 0x0001;
+const nextBall = 0x0004;
+
+// Options for ball
+const ballOptions = {
+    restitution: 1, 
+    // collisionFilter: {
+    //     mask: solid,
+    //     category: nextBall
+    // },
+    render: {
+        sprite: {
+            // texture: './assets/ghost-freepik.png',
+            xScale: 0.2,
+            yScale: 0.2
+        }
+    }
+}
+
+const prevBallOptions = {
+    restitution: 1, 
+    collisionFilter: {
+        mask: solid,
+        category: nextBall
+    },
+    render: {
+        sprite: {
+            // texture: './assets/ghost-freepik.png',
+            xScale: 0.2,
+            yScale: 0.2
+        }
+    }
+}
+
+
+
+// Function to add a sling to the world and setup mouse constraint
 const createSling = (levelParam) => {
     let { 
         mouse, 
@@ -191,8 +245,10 @@ const createSling = (levelParam) => {
     let {
         sling,
         ball,
+        prevBalls,
         groundPlane,
-        platforms
+        platforms,
+        ghost 
     } = bodies;
     
     const ballProps = levelParam.ball;
@@ -202,40 +258,133 @@ const createSling = (levelParam) => {
     mouse = Mouse.create(render.canvas);
     mouseConstraint = MouseConstraint.create(engine, {
         mouse: mouse,
+        collisionFilter: {
+            category: nextBall
+        },
         constraint: {
             render: { visible: false }
         }
     });
 
+    console.log(mouseConstraint);
+
     // Bodies and body-supporting functions
-    ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, {
-        restitution: 1, 
-        render: {
-            sprite: {
-                // texture: './assets/ghost-freepik.png',
-                xScale: 0.2,
-                yScale: 0.2
-            }
-        }
-    });
+    ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+
+    console.log("ball created");
+    console.log(ball);
     sling = Constraint.create({
         pointA: {x: slingProps.x, y: slingProps.y},
         bodyB: ball,
-        stiffness: slingProps.k
+        // stiffness: slingProps.k,
+        stiffness: 0.1,
+        length: 0,
     });
+    
+    console.log(sling);
+
+    Events.on(engine, 'collisionEnd', (e) => {
+        // console.log(e);
+        // if (!!SAT.collides(ball, groundPlane)?.collided) {
+        //     // console.log("collision");
+        // }
+
+        const pairs = e.pairs;
+
+        // bodyB is the object that got hit by the ball
+        if (pairs) {
+            console.log("there is a collision");
+                pairs.forEach(pair => {
+                pair.bodyA.render.fillStyle = 'red';
+                console.log(pair.bodyB);
+                // pair.bodyB.render.fillStyle = 'red';
+            })
+        }
+
+    })
+
     Events.on(mouseConstraint, 'enddrag', (e) => {
         if (e.body === ball) {
             firing = true;
+            // console.log("ball");
+            // console.log(e.body);
         }
+
+        // // prevent ghost drag but still allow it to respond to the physics engine
+        // if(e.body.label === 'ghost') {
+        //     e.body.isStatic = false;
+        // }
+        
+        // if(e.body === ball) {
+        //     e.body.isStatic = false;
+        // }
     })
     Events.on(engine, 'afterUpdate', () => {
-        if (firing && Math.abs(ball.position.x - slingProps.x) < 40 && Math.abs(ball.position.y - slingProps.y) < 40) {
-            ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius);
-            World.add(engine.world, ball);
+         if (firing && Math.abs(ball.position.x - slingProps.x) < 20 && Math.abs(ball.position.y - slingProps.y) < 20) {
+            
+    
+            // ball.collisionFilter.category = nextBall;
+            // ball.collisionFilter.mask = nextBall;
+
+            // const oldBall = {...ball};
+
+            // prevBalls.push(oldBall)
+
+            ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+
+            World.add(engine.world, ball); // 'launches' the ball
+            // ball.collisionFilter = { category: solid, mask: solid };
+
+            // nextBall = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
             sling.bodyB = ball;
+
             firing = false;
+
+            // World.remove(engine.world, sling);
+
+            // ball.collisionFilter.category = nextBall;
+
+            // ball.collisionFilter.category = nextBall;
         }  
     });
+
+    Events.on(mouseConstraint, 'startdrag', (e) => {
+        console.log("e");
+        console.log(e);
+        
+        // // prevent ghost drag but still allow it to respond to the physics engine
+        // if (e.body.label === 'ghost') {
+        //     console.log("ghost is being dragged")
+        //     e.body.isStatic = true;
+        //     // e.body.collisionFilter = { category: solid, mask: solid };
+        // }
+
+        if(e.body === ball) {
+            console.log(e);
+        //     e.body.isStatic = true;
+        }
+    })
+
+    // Events.on(engine, 'collisionEnd', (e) => {
+    //     const hasCollided = Matter.Collision.collides(ball, groundPlane);
+    //     console.log("has collided? ")
+    //     console.log(hasCollided);
+    //     console.log(e);
+
+
+    //     if (!!Matter.Collision.collides(ball, groundPlane)?.collided) {
+    //         // console.log("collision");
+    //     }
+    //     // console.log("there is a collision");
+
+    //     // let pairs = e.pairs;
+    //     // console.log(pairs);
+
+    //     // pairs.forEach(pair => {
+    //     //     pair.bodyA ? pair.bodyA.render.fillStyle = 'red' : null;
+    //     //     // pair.bodyB.render.fillStyle = '#333';
+    //     // })
+    // })
     World.add(engine.world, [ball, mouseConstraint, sling]);
 }
 
@@ -270,41 +419,12 @@ const addElements = () => {
         sling,
         ball,
         groundPlane,
-        platforms
+        platforms,
+        ghost
     } = bodies;
     
-    // Mouse
-    // mouse = Mouse.create(render.canvas);
-    // mouseConstraint = MouseConstraint.create(engine, {
-    //     mouse: mouse,
-    //     constraint: {
-    //         render: { visible: false }
-    //     }
-    // });
-
     // Bodies and body-supporting functions
-    groundPlane = Bodies.rectangle(150, 890, 300, 20, groundOptions);
-
-    // platform = Bodies.rectangle(650, 300, 150, 20, groundOptions);
-
-    // ball = Bodies.circle(300, 600, 20, {
-    //     restitution: 1, 
-    //     render: {
-    //         sprite: {
-    //             // texture: './assets/ghost-freepik.png',
-    //             xScale: 0.2,
-    //             yScale: 0.2
-    //         }
-    //     }
-    // });
-    // sling = Constraint.create({
-    //     pointA: {x: 300, y: 600},
-    //     bodyB: ball,
-    //     stiffness: 0.02
-    // });
-
-
-
+    groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
     
     // load a svg file and parse it with image/svg+xml params
     const loadSvg = (filePath) => {
@@ -332,20 +452,25 @@ const addElements = () => {
                 const vertexSets = select(root, 'path')
                     .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
     
-                const ghost1 = Composite.add(engine.world, Bodies.fromVertices(i +30, i + 30, vertexSets, {
+                ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
+                    label: 'ghost',
                     render: {
-                        fillStyle: 'red',
+                        fillStyle: 'yellow',
                         strokeStyle: '#f19648',
                         lineWidth: 1,
                         sprite: {
-                            texture: './assets/ghost-freepik.png',
+                            // texture: './assets/ghost-freepik.png',
                             xScale: 0.15,
                             yScale: 0.15
                         }
                     }
-                }, true));
+                }, true);
     
-                console.log(ghost1);
+                World.add(engine.world, [ghost]);
+
+                ghost.collisionFilter = { category: solid, mask: solid };
+
+                console.log(ghost);
             });
         });
     }
@@ -404,18 +529,18 @@ const addElements = () => {
     // });
 
     // Events.on(engine, 'collisionEnd', (e) => {
-    //     if (!!SAT.collides(ball, groundPlane)?.collided) {
+    //     if (!!Matter.Collision.collides(ball, groundPlane)?.collided) {
     //         // console.log("collision");
     //     }
     //     // console.log("there is a collision");
 
     //     let pairs = e.pairs;
-    //     // console.log(e);
+    //     console.log(pairs);
 
-    //     pairs.forEach(pair => {
-    //         pair.bodyA.render.fillStyle = 'red';
-    //         // pair.bodyB.render.fillStyle = '#333';
-    //     })
+    //     // pairs.forEach(pair => {
+    //     //     pair.bodyA ? pair.bodyA.render.fillStyle = 'red' : null;
+    //     //     // pair.bodyB.render.fillStyle = '#333';
+    //     // })
     // })
 
     // Events.on(mouseConstraint, 'startDrag', (e) => {
@@ -462,7 +587,7 @@ console.log(levels[0]);
 
 // params: x, y, radius, restitution, inertia
 createSling(levels[0]);
-addPlatforms(levels[1]);
+addPlatforms(levels[0]);
 
 // params: 
 addElements();
