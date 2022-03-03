@@ -18,7 +18,7 @@ const levels = [
         slingProps: {
             x: 300,
             y: 700,
-            k: 0.02
+            k: 0.1
         },
         ball: {
             radius: 20,
@@ -53,7 +53,7 @@ const levels = [
         slingProps: {
             x: 300,
             y: 500,
-            k: 0.02
+            k: 0.1
         },
         ball: {
             radius: 20,
@@ -95,7 +95,7 @@ const levels = [
         slingProps: {
             x: 20,
             y: 200,
-            k: 0.02
+            k: 0.1
         },
         ball: {
             radius: 0.5,
@@ -183,7 +183,6 @@ const render = Render.create({
 // Define bodies
 const bodies = {
     sling: null,
-    prevBalls: [],
     ball: null, 
     groundPlane: null,
     platforms: [],
@@ -245,7 +244,6 @@ const createSling = (levelParam) => {
     let {
         sling,
         ball,
-        prevBalls,
         groundPlane,
         platforms,
         ghost 
@@ -276,8 +274,7 @@ const createSling = (levelParam) => {
     sling = Constraint.create({
         pointA: {x: slingProps.x, y: slingProps.y},
         bodyB: ball,
-        // stiffness: slingProps.k,
-        stiffness: 0.1,
+        stiffness: slingProps.k,
         length: 0,
     });
     
@@ -297,7 +294,6 @@ const createSling = (levelParam) => {
                 pairs.forEach(pair => {
                 pair.bodyA.render.fillStyle = 'red';
                 console.log(pair.bodyB);
-                // pair.bodyB.render.fillStyle = 'red';
             })
         }
 
@@ -306,85 +302,24 @@ const createSling = (levelParam) => {
     Events.on(mouseConstraint, 'enddrag', (e) => {
         if (e.body === ball) {
             firing = true;
-            // console.log("ball");
-            // console.log(e.body);
         }
-
-        // // prevent ghost drag but still allow it to respond to the physics engine
-        // if(e.body.label === 'ghost') {
-        //     e.body.isStatic = false;
-        // }
-        
-        // if(e.body === ball) {
-        //     e.body.isStatic = false;
-        // }
     })
+
     Events.on(engine, 'afterUpdate', () => {
          if (firing && Math.abs(ball.position.x - slingProps.x) < 20 && Math.abs(ball.position.y - slingProps.y) < 20) {
             
-    
-            // ball.collisionFilter.category = nextBall;
-            // ball.collisionFilter.mask = nextBall;
-
-            // const oldBall = {...ball};
-
-            // prevBalls.push(oldBall)
+            ball.collisionFilter.category = solid;
+            ball.collisionFilter.mask = solid;
 
             ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
 
             World.add(engine.world, ball); // 'launches' the ball
-            // ball.collisionFilter = { category: solid, mask: solid };
-
-            // nextBall = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
             sling.bodyB = ball;
-
             firing = false;
 
-            // World.remove(engine.world, sling);
-
-            // ball.collisionFilter.category = nextBall;
-
-            // ball.collisionFilter.category = nextBall;
         }  
     });
 
-    Events.on(mouseConstraint, 'startdrag', (e) => {
-        console.log("e");
-        console.log(e);
-        
-        // // prevent ghost drag but still allow it to respond to the physics engine
-        // if (e.body.label === 'ghost') {
-        //     console.log("ghost is being dragged")
-        //     e.body.isStatic = true;
-        //     // e.body.collisionFilter = { category: solid, mask: solid };
-        // }
-
-        if(e.body === ball) {
-            console.log(e);
-        //     e.body.isStatic = true;
-        }
-    })
-
-    // Events.on(engine, 'collisionEnd', (e) => {
-    //     const hasCollided = Matter.Collision.collides(ball, groundPlane);
-    //     console.log("has collided? ")
-    //     console.log(hasCollided);
-    //     console.log(e);
-
-
-    //     if (!!Matter.Collision.collides(ball, groundPlane)?.collided) {
-    //         // console.log("collision");
-    //     }
-    //     // console.log("there is a collision");
-
-    //     // let pairs = e.pairs;
-    //     // console.log(pairs);
-
-    //     // pairs.forEach(pair => {
-    //     //     pair.bodyA ? pair.bodyA.render.fillStyle = 'red' : null;
-    //     //     // pair.bodyB.render.fillStyle = '#333';
-    //     // })
-    // })
     World.add(engine.world, [ball, mouseConstraint, sling]);
 }
 
@@ -476,86 +411,11 @@ const addElements = () => {
     }
     
     addAGhost();
-    // addSlingshot();    
 
     console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
-
  
-
-
-
-    // // Create collision detector
-    // const crashDetector = Detector.create({
-    //     bodies: [ball, groundPlane]
-    // });
-    
-    // // Collision bodies to detect
-    // const colBodies = Detector.setBodies(crashDetector, [ball, groundPlane]);
-    
-    // // Collision array
-    // const collisions = Detector.collisions(crashDetector);
-
-    // const mouseSetElement = Mouse.setElement(mouse, document.querySelector('.game'));
-
-    // // console.log(mouseSetElement);
-
-    // const startBtn = document.querySelector('.startBtn');
-
-    // //Test function: uses Start button to launch ball upwards
-    // startBtn.addEventListener('click', () => {
-    //     const bodyAddForce = Body.applyForce(bodies.ball, bodies.ball.position, { x: 0, y: -0.1 });
-    //     console.log("body add force: ", bodyAddForce);
-        
-    //     // Detects if two objects have collided
-    //     console.log("collision? ", Matter.SAT?.collides(ball, groundPlane).collided);
-    // })
-
-  
-
-    // Events
-    // Events.on(mouseConstraint, 'enddrag', (e) => {
-    //     if (e.body === ball) {
-    //         firing = true;
-    //     }
-    // })
-    
-    // Events.on(engine, 'afterUpdate', () => {
-    //     if (firing && Math.abs(ball.position.x - 300) < 40 && Math.abs(ball.position.y - 600) < 40) {
-    //         ball = Bodies.circle(300, 600, 20);
-    //         World.add(engine.world, ball);
-    //         sling.bodyB = ball;
-    //         firing = false;
-    //     }  
-    // });
-
-    // Events.on(engine, 'collisionEnd', (e) => {
-    //     if (!!Matter.Collision.collides(ball, groundPlane)?.collided) {
-    //         // console.log("collision");
-    //     }
-    //     // console.log("there is a collision");
-
-    //     let pairs = e.pairs;
-    //     console.log(pairs);
-
-    //     // pairs.forEach(pair => {
-    //     //     pair.bodyA ? pair.bodyA.render.fillStyle = 'red' : null;
-    //     //     // pair.bodyB.render.fillStyle = '#333';
-    //     // })
-    // })
-
-    // Events.on(mouseConstraint, 'startDrag', (e) => {
-    //     // console.log(e);
-    //     if (e.body === ball) {
-    //         // console.log("ended drag on a body: ", e.body);
-    //         // console.log(e.body);
-    //     }
-    // })
-
-
     // Add items to world
     World.add(engine.world, [groundPlane]);
-        // ghost[0]]
-        // );
 
 
 }
