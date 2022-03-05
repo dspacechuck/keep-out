@@ -2,6 +2,28 @@ import { renderConfig, groundOptions } from './config.js';
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
+//  Define different movement modes for game objects
+//  Easing method and types are for GSAP motion library use: https://greensock.com/docs/v3/Eases
+const moveModes = [{
+        id: 1,
+        movement: 'xLimitsAlternate',  // shuffle horizontally from edge to edge of screen width,
+        easing: 'power1',   // movement easing method
+        type: 'inOut'   // movement easing type
+    },
+    {
+        id: 2,
+        movement: 'sinosodalSmall',  // moves horizontally in a low amplitude sinusodal pattern from edge to edge of screen width
+        easing: 'power1',   // movement easing method
+        type: 'inOut'   // movement easing type
+    },
+    {
+        id: 3,
+        movement: 'randomAppear',  // appears and dissappears sporadically at random horizontal locations on the screen
+        easing: 'power1',   // movement easing method
+        type: 'inOut'   // movement easing type
+    }
+];
+
 const levels = [
     {
         level: 1,
@@ -31,7 +53,13 @@ const levels = [
                 y: 300,
                 width: 100,
                 height: 20,
-                restitution: 0
+                restitution: 0,
+                hasGhost: true,
+                canMove: {
+                    mode: moveModes[0],
+                    xTorque: 1,
+                    yTorque: 0
+                }
             }
         ],
         timer: 60,
@@ -66,14 +94,18 @@ const levels = [
                 y: 300,
                 width: 150,
                 height: 20,
-                restitution: 0.5
+                restitution: 0.5,
+                hasGhost: true,
+                canMove: true
             },
             {
                 x: 800,
                 y: 300,
                 width: 150,
                 height: 20,
-                restitution: 0.5
+                restitution: 0.5,
+                hasGhost: false,
+                canMove: true
             }
         ],
         timer: 60,
@@ -108,7 +140,27 @@ const levels = [
                 y: 300,
                 width: 150,
                 height: 20,
-                restitution: 1
+                restitution: 1,
+                hasGhost: true,
+                canMove: true
+            },
+            {
+                x: 150,
+                y: 350,
+                width: 250,
+                height: 20,
+                restitution: 1,
+                hasGhost: false,
+                canMove: true
+            },
+            {
+                x: 350,
+                y: 250,
+                width: 150,
+                height: 20,
+                restitution: 1,
+                hasGhost: false,
+                canMove: true
             }
         ],
         timer: 60,
@@ -163,7 +215,6 @@ const ghostLevels = [
     },
 ];
 
-
 // Setup game
 const gameCanvas = document.querySelector('.game');
 const engine = Engine.create();
@@ -203,10 +254,6 @@ const nextBall = 0x0004;
 // Options for ball
 const ballOptions = {
     restitution: 1, 
-    // collisionFilter: {
-    //     mask: solid,
-    //     category: nextBall
-    // },
     render: {
         sprite: {
             // texture: './assets/ghost-freepik.png',
@@ -215,23 +262,6 @@ const ballOptions = {
         }
     }
 }
-
-const prevBallOptions = {
-    restitution: 1, 
-    collisionFilter: {
-        mask: solid,
-        category: nextBall
-    },
-    render: {
-        sprite: {
-            // texture: './assets/ghost-freepik.png',
-            xScale: 0.2,
-            yScale: 0.2
-        }
-    }
-}
-
-
 
 // Function to add a sling to the world and setup mouse constraint
 const createSling = (levelParam) => {
@@ -341,6 +371,18 @@ const addPlatforms = (levelParam) => {
     World.add(engine.world, platforms);
 }
 
+// Function to animate game objects (.i.e: after game starts)
+// Use this after addPlatforms
+// *******Finish this function later (WIP)
+const animateObjs = (levelParam) => {
+    let {
+        platforms
+    } = bodies
+
+    console.log({platforms});
+}
+
+
 
 // Function to add elements to the world
 const addElements = () => {
@@ -394,7 +436,7 @@ const addElements = () => {
                         strokeStyle: '#f19648',
                         lineWidth: 1,
                         sprite: {
-                            // texture: './assets/ghost-freepik.png',
+                            texture: './assets/ghost-freepik.png',
                             xScale: 0.15,
                             yScale: 0.15
                         }
@@ -456,3 +498,17 @@ addElements();
 // add all objects to the world
 addObjs();
 runGame();
+
+$(document).ready(() => {
+    console.log('game is loaded!');
+
+    // Have a splash screen (arcade game style screen)
+    // 1) Await Start button click 
+    // 2) Show instructions + animate slingshot movement
+    // 3) Await user click of OK to dismiss splash screen
+    // 4) Show 3, 2, 1 countdown 
+    // 5) run game
+        // 5.1 (start countdown clock) 
+       // 5.2 (i.e.: animate any objects as necessary)
+
+});
