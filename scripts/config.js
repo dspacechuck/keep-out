@@ -1,4 +1,9 @@
 
+export const startBtnProps = {
+    startString: 'START',
+    pauseString: 'PAUSE'
+};
+
 export const renderConfig = {
     // options: {
     //     width: 800,

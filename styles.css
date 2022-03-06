@@ -94,23 +94,40 @@ svg {
   height: 100px;
 }
 
-/* Timer progress bar */
-.timerDiv {
+.timerDiv, 
+.timerDivBg {
   width: 200px;
   height: 14px;
-  background: orange;
   border: 3px solid none;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
+}
+/* Timer progress bar */
+.timerDiv {
+  background: orange;
   font-size: 1.7rem;
   font-weight: bold;
+  width: 30px;
 }
+
+/* Timer progress bar background */
+.timerDivBg {
+  background: rgb(171, 72, 180);;
+}
+
 
 /* Styling for time readout text */
 .myTime {
   word-wrap: nowrap;
   position: relative;
   top: -12px;
+  color: darkslateblue
+}
+
+/* Button animation */
+@keyframes breathe {
+  from {letter-spacing: initial;}
+  to {letter-spacing: 3px;}
 }
 
 /* Format start/reset button */
@@ -119,19 +136,18 @@ svg {
   padding: 15px;
   width: 120px;
   color: darkslateblue;
-  border: 3px solid darkslateblue;
-}
-
-/* Start button hover state */
-.startBtn:hover {
-  background: rgb(78, 216, 44);
-  cursor: pointer;
+  border: 3px solid transparent;
 }
 
 /* Primary properties for start button */
 .btnPrimaryProps {
-  background: palevioletred;
+  background: rgb(154, 216, 44);
+  letter-spacing: 3px;
   transition: ease 1s;
+  animation-name: breathe;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 
 /* Alt properties class for start button (when it changes to "RESET") */
@@ -142,8 +158,18 @@ svg {
 
 /* Alt properties class for start button (when it changes to "RESET") on hover*/
 .btnAltProps:hover {
-  background: rgb(235, 47, 47);
+  /* background: rgb(235, 47, 47); */
   cursor: pointer;
+}
+
+/* Start button hover state */
+.startBtn:hover {
+  /* background: yellow; */
+  cursor: pointer;
+}
+
+.startBtn:hover .btnPrimaryProps {
+  letter-spacing: 1px;
 }
 
 /* Rules section text formatting */

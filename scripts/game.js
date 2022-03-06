@@ -1,4 +1,4 @@
-import { renderConfig, groundOptions, moveModes, levels, ghostLevels } from './config.js'; 
+import { startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
@@ -66,14 +66,14 @@ const ballOptions = {
 const currLevelObj = levels.find((level) => {return level.currentLevel === true});
 
 const checkGameStatus = (timeLeft) => {
-    if(timeLeft <= 1) {
+    if(timeLeft <= 0) {
         console.log("Game lost");
         clearInterval(levelStates.timerHandle);
     }
 }
 
 // Starts/pauses countdown timer
-const countdownTimer = () => {
+const countdownTimerMgr = () => {
     
     // Find current level
     console.log(currLevelObj);
@@ -85,6 +85,9 @@ const countdownTimer = () => {
                 levelStates.timeLeft -= 1;
                 console.log(levelStates.timeLeft);
                 checkGameStatus(levelStates.timeLeft); // check to see if game is won or not
+
+                // Can we use a promise for checkGameStatus?
+
             }, 1000);  
         }
     } else {
@@ -93,21 +96,17 @@ const countdownTimer = () => {
             clearInterval(levelStates.timerHandle);
         }
     }
+   
+}
 
-    // let timeLeft;
-    // let timerHandle = setInterVal(countDown, timeLeft)
-
-    // if(timerOn) {
-    //     timeLeft = levelStates.currLevel;
-    //     setInterval(() => {
-    //         console.log(levelTimer);
-    //         timeLeft -= 1;
-    //     }, 1000);      
-    // } else {
-    //     // stop counting down
-    //     clearInterval(timerHandle);
-    // }
-    
+const toggleStartButtonState = () => {
+    if (controls.startState) {
+        startBtn.innerHTML=startBtnProps.pauseString;
+        startBtn.classList.add('btnAltProps');
+    } else {
+        startBtn.innerHTML=startBtnProps.startString;
+        startBtn.classList.remove('btnAltProps');
+    }
 }
 
 // Add start button event listener
@@ -115,29 +114,12 @@ const countdownTimer = () => {
 const addUIListeners = () => {
     startBtn.addEventListener('click', (e) => {
         
-        // const {
-        //     startState, toggleState
-        // } = controls;
-    
-        // toggleState();
-        
         controls.toggleState();
+        countdownTimerMgr();
 
-        // if (controls.startState) {
-            countdownTimer();
-        // }
-
-     
-        console.log(controls.startState);
-    
-        // If startState = true: 
-        // 1) load level
-        // 2) Start countdown timer
-
-        // If startState = false:
-        // 1) remove mouseConstraint
-        // 2) Pause countdown timer
-
+        // 1) Add/remove mouse constraint
+        // 2) Toggle button text
+        toggleStartButtonState();
 
     });
 }
