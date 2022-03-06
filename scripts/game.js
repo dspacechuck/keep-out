@@ -1,219 +1,6 @@
-import { renderConfig, groundOptions } from './config.js'; 
+import { renderConfig, groundOptions, moveModes, levels, ghostLevels } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
-
-//  Define different movement modes for game objects
-//  Easing method and types are for GSAP motion library use: https://greensock.com/docs/v3/Eases
-const moveModes = [{
-        id: 1,
-        movement: 'xLimitsAlternate',  // shuffle horizontally from edge to edge of screen width,
-        easing: 'power1',   // movement easing method
-        type: 'inOut'   // movement easing type
-    },
-    {
-        id: 2,
-        movement: 'sinosodalSmall',  // moves horizontally in a low amplitude sinusodal pattern from edge to edge of screen width
-        easing: 'power1',   // movement easing method
-        type: 'inOut'   // movement easing type
-    },
-    {
-        id: 3,
-        movement: 'randomAppear',  // appears and dissappears sporadically at random horizontal locations on the screen
-        easing: 'power1',   // movement easing method
-        type: 'inOut'   // movement easing type
-    }
-];
-
-const levels = [
-    {
-        level: 1,
-        ghost: {
-            easy: [
-                {
-                    x: 650,
-                    y: 300
-                }
-            ],
-            mid: [],
-            hard: []
-        },
-        slingProps: {
-            x: 300,
-            y: 700,
-            k: 0.1
-        },
-        ball: {
-            radius: 20,
-            restitution: 1,
-            inertia: 5,
-        },
-        platforms: [
-            {
-                x: 650,
-                y: 300,
-                width: 100,
-                height: 20,
-                restitution: 0,
-                hasGhost: true,
-                canMove: {
-                    mode: moveModes[0],
-                    xTorque: 1,
-                    yTorque: 0
-                }
-            }
-        ],
-        timer: 60,
-        greeting: 'Are you ready to banish some ghosts?',
-        completeString: 'Great job!'
-    },
-    {
-        level: 2,
-        ghost: {
-            easy: 0,
-            mid: [
-                {
-                    x: 250,
-                    y: 300
-                }
-            ],
-            hard: 0
-        },
-        slingProps: {
-            x: 300,
-            y: 500,
-            k: 0.1
-        },
-        ball: {
-            radius: 20,
-            restitution: 1,
-            inertia: 5,
-        },
-        platforms: [
-            {
-                x: 250,
-                y: 300,
-                width: 150,
-                height: 20,
-                restitution: 0.5,
-                hasGhost: true,
-                canMove: true
-            },
-            {
-                x: 800,
-                y: 300,
-                width: 150,
-                height: 20,
-                restitution: 0.5,
-                hasGhost: false,
-                canMove: true
-            }
-        ],
-        timer: 60,
-        greeting: 'Who are you gonna call?',
-        completeString: 'Level 2 complete!'
-    },
-    {
-        level: 3,
-        ghost: {
-            easy: 0,
-            mid: 0,
-            hard: [
-                {
-                    x: 650,
-                    y: 300
-                }
-            ],
-        },
-        slingProps: {
-            x: 20,
-            y: 200,
-            k: 0.1
-        },
-        ball: {
-            radius: 0.5,
-            restitution: 1,
-            inertia: 5,
-        },
-        platforms: [
-            {
-                x: 650,
-                y: 300,
-                width: 150,
-                height: 20,
-                restitution: 1,
-                hasGhost: true,
-                canMove: true
-            },
-            {
-                x: 150,
-                y: 350,
-                width: 250,
-                height: 20,
-                restitution: 1,
-                hasGhost: false,
-                canMove: true
-            },
-            {
-                x: 350,
-                y: 250,
-                width: 150,
-                height: 20,
-                restitution: 1,
-                hasGhost: false,
-                canMove: true
-            }
-        ],
-        timer: 60,
-        greeting: 'Not so easy now!',
-        completeString: 'Well Done!'
-    }
-];
-
-const ghostLevels = [
-    {
-        level: 1,
-        label: 'easy',
-        ghostName: 'Rufus',
-        hitsRequired: 1,
-        restitution: 1,
-        reactiveLevel: 0,
-        canMove: false, 
-        copyInterval: -1,
-        vanishCounts: -1,
-        taunt: `Can't get me!`,
-        imgPath: './assets/ghost-freepik.png',
-        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
-    },
-    {
-        level: 2,
-        label: 'mid',
-        ghostName: 'Twinko',
-        hitsRequired: 2,
-        restitution: 1,
-        reactiveLevel: 0,
-        canMove: false, 
-        copyInterval: 20,
-        vanishCounts: -1,
-        help: 'Twinko the ghost requires two hits to banish and has a secret trick up its sleeve.',
-        taunt: `Can't get me!`,
-        imgPath: './assets/ghost-freepik-yellow.png',
-        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
-    },
-    {
-        level: 3,
-        label: 'hard',
-        ghostName: 'Drako',
-        hitsRequired: 3,
-        restitution: 1,
-        reactiveLevel: 1,
-        canMove: true, 
-        copyInterval: 0,
-        vanishCounts: 3, 
-        taunt: `Drako the ghost requires three hits to banish. Watch out for this sneaky ghost!`,
-        imgPath: './assets/ghost-freepik-green.png',
-        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
-    },
-];
 
 // Setup game
 const gameCanvas = document.querySelector('.game');
@@ -240,11 +27,23 @@ const bodies = {
     ghost: null
 }
 
+// Cache Start button selector
+const startBtn = document.querySelector('.startBtn');
+
 // Define controls
 const controls = {
     mouse: null,
     mouseConstraint: null,
-    firing: null
+    firing: false, 
+    startState: false,
+    toggleState: function() {controls.startState = !controls.startState}
+}
+
+// Define level states 
+const levelStates = {
+    currLevel: 0,
+    timeLeft: null,
+    timerHandle: null
 }
 
 // Setup bitmasks for collision filter
@@ -263,29 +62,111 @@ const ballOptions = {
     }
 }
 
-// Function to add a sling to the world and setup mouse constraint
-const createSling = (levelParam) => {
-    let { 
-        mouse, 
-        mouseConstraint, 
-        firing 
-    } = controls;
+// Tracks current level
+const currLevelObj = levels.find((level) => {return level.currentLevel === true});
 
-    let {
-        sling,
-        ball,
-        groundPlane,
-        platforms,
-        ghost 
-    } = bodies;
+const checkGameStatus = (timeLeft) => {
+    if(timeLeft <= 1) {
+        console.log("Game lost");
+        clearInterval(levelStates.timerHandle);
+    }
+}
+
+// Starts/pauses countdown timer
+const countdownTimer = () => {
+    
+    // Find current level
+    console.log(currLevelObj);
+
+    // If game state is ON, start timer
+    if (controls.startState) {
+        if (levelStates.timeLeft > 1) {
+            levelStates.timerHandle = setInterval(() => {
+                levelStates.timeLeft -= 1;
+                console.log(levelStates.timeLeft);
+                checkGameStatus(levelStates.timeLeft); // check to see if game is won or not
+            }, 1000);  
+        }
+    } else {
+        // pause timer
+        if (levelStates.timeLeft > 1) {
+            clearInterval(levelStates.timerHandle);
+        }
+    }
+
+    // let timeLeft;
+    // let timerHandle = setInterVal(countDown, timeLeft)
+
+    // if(timerOn) {
+    //     timeLeft = levelStates.currLevel;
+    //     setInterval(() => {
+    //         console.log(levelTimer);
+    //         timeLeft -= 1;
+    //     }, 1000);      
+    // } else {
+    //     // stop counting down
+    //     clearInterval(timerHandle);
+    // }
+    
+}
+
+// Add start button event listener
+// onClick => change button text to "pause" and start game
+const addUIListeners = () => {
+    startBtn.addEventListener('click', (e) => {
+        
+        // const {
+        //     startState, toggleState
+        // } = controls;
+    
+        // toggleState();
+        
+        controls.toggleState();
+
+        // if (controls.startState) {
+            countdownTimer();
+        // }
+
+     
+        console.log(controls.startState);
+    
+        // If startState = true: 
+        // 1) load level
+        // 2) Start countdown timer
+
+        // If startState = false:
+        // 1) remove mouseConstraint
+        // 2) Pause countdown timer
+
+
+    });
+}
+
+
+
+// Function to add a sling to the world and setup mouse constraint
+const createSling = (levelParam) => {  
+    // let { 
+    //     mouse, 
+    //     mouseConstraint, 
+    //     firing 
+    // } = controls;
+
+    // let {
+    //     sling,
+    //     ball,
+    //     groundPlane,
+    //     platforms,
+    //     ghost 
+    // } = bodies;
     
     const ballProps = levelParam.ball;
     const slingProps = levelParam.slingProps;
 
     // Mouse
-    mouse = Mouse.create(render.canvas);
-    mouseConstraint = MouseConstraint.create(engine, {
-        mouse: mouse,
+    controls.mouse = Mouse.create(render.canvas);
+    controls.mouseConstraint = MouseConstraint.create(engine, {
+        mouse: controls.mouse,
         collisionFilter: {
             category: nextBall
         },
@@ -294,70 +175,67 @@ const createSling = (levelParam) => {
         }
     });
 
-    console.log(mouseConstraint);
+    console.log(controls.mouseConstraint);
 
     // Bodies and body-supporting functions
-    ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+    bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
 
     console.log("ball created");
-    console.log(ball);
-    sling = Constraint.create({
+    console.log(bodies.ball);
+    bodies.sling = Constraint.create({
         pointA: {x: slingProps.x, y: slingProps.y},
-        bodyB: ball,
+        bodyB: bodies.ball,
         stiffness: slingProps.k,
         length: 0,
     });
     
-    console.log(sling);
+    console.log(bodies.sling);
 
-    Events.on(engine, 'collisionEnd', (e) => {
-        // console.log(e);
-        // if (!!SAT.collides(ball, groundPlane)?.collided) {
-        //     // console.log("collision");
-        // }
+    // Events.on(engine, 'collisionEnd', (e) => {
 
-        const pairs = e.pairs;
+    //     const pairs = e.pairs;
 
-        // bodyB is the object that got hit by the ball
-        if (pairs) {
-            console.log("there is a collision");
-                pairs.forEach(pair => {
-                pair.bodyA.render.fillStyle = 'red';
-                console.log(pair.bodyB);
-            })
-        }
+    //     // bodyB is the object that got hit by the ball
+    //     if (pairs) {
+    //         console.log("there is a collision");
+    //             pairs.forEach(pair => {
+    //             pair.bodyA.render.fillStyle = 'red';
+    //             console.log(pair.bodyB);
+    //         })
+    //     }
 
-    })
+    // })
 
-    Events.on(mouseConstraint, 'enddrag', (e) => {
-        if (e.body === ball) {
-            firing = true;
+    Events.on(controls.mouseConstraint, 'enddrag', (e) => {
+        if (e.body === bodies.ball) {
+            controls.firing = true;
         }
     })
 
     Events.on(engine, 'afterUpdate', () => {
-         if (firing && Math.abs(ball.position.x - slingProps.x) < 20 && Math.abs(ball.position.y - slingProps.y) < 20) {
+         if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
             
-            ball.collisionFilter.category = solid;
-            ball.collisionFilter.mask = solid;
+            bodies.ball.collisionFilter.category = solid;
+            bodies.ball.collisionFilter.mask = solid;
 
-            ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+            bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
 
-            World.add(engine.world, ball); // 'launches' the ball
-            sling.bodyB = ball;
-            firing = false;
+            World.add(engine.world, bodies.ball); // 'launches' the ball
+            bodies.sling.bodyB = bodies.ball;
+            controls.firing = false;
 
+            console.log(controls.firing);
         }  
     });
 
-    World.add(engine.world, [ball, mouseConstraint, sling]);
+    World.add(engine.world, [bodies.ball, controls.mouseConstraint, bodies.sling]);
 }
 
 // Function to add platforms to the world
 const addPlatforms = (levelParam) => {
-    let {
-        platforms
-    } = bodies
+    // let {
+    //     platforms
+    // } = bodies
 
     const platformsArr = levelParam.platforms;
 
@@ -365,21 +243,21 @@ const addPlatforms = (levelParam) => {
     // then pushes this array of created platforms to bodies.platforms
     platformsArr.forEach(({x, y, width, height, restitution}) => {
         const currPlatform = Bodies.rectangle(x, y, width, height, groundOptions);
-        platforms.push(currPlatform);
+        bodies.platforms.push(currPlatform);
     })
 
-    World.add(engine.world, platforms);
+    World.add(engine.world, bodies.platforms);
 }
 
 // Function to animate game objects (.i.e: after game starts)
 // Use this after addPlatforms
 // *******Finish this function later (WIP)
 const animateObjs = (levelParam) => {
-    let {
-        platforms
-    } = bodies
+    // let {
+    //     platforms
+    // } = bodies
 
-    console.log({platforms});
+    console.log(bodies.platforms);
 }
 
 
@@ -401,7 +279,7 @@ const addElements = () => {
     } = bodies;
     
     // Bodies and body-supporting functions
-    groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
+    bodies.groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
     
     // load a svg file and parse it with image/svg+xml params
     const loadSvg = (filePath) => {
@@ -429,7 +307,7 @@ const addElements = () => {
                 const vertexSets = select(root, 'path')
                     .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
     
-                ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
+                bodies.ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
                     label: 'ghost',
                     render: {
                         fillStyle: 'yellow',
@@ -443,11 +321,11 @@ const addElements = () => {
                     }
                 }, true);
     
-                World.add(engine.world, [ghost]);
+                World.add(engine.world, [bodies.ghost]);
 
-                ghost.collisionFilter = { category: solid, mask: solid };
+                bodies.ghost.collisionFilter = { category: solid, mask: solid };
 
-                console.log(ghost);
+                console.log(bodies.ghost);
             });
         });
     }
@@ -457,7 +335,7 @@ const addElements = () => {
     console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
  
     // Add items to world
-    World.add(engine.world, [groundPlane]);
+    World.add(engine.world, [bodies.groundPlane]);
 
 
 }
@@ -479,7 +357,7 @@ const addObjs = () => {
     // World.add(engine.world, [groundPlane, ball, platform, mouseConstraint, sling]);
 }
 
-const runGame = () => {
+const runEngine = () => {
     Runner.run(engine);
     Render.run(render);
 }
@@ -497,10 +375,12 @@ addElements();
 
 // add all objects to the world
 addObjs();
-runGame();
+runEngine();
 
 $(document).ready(() => {
     console.log('game is loaded!');
+    addUIListeners();
+    levelStates.timeLeft = currLevelObj.timer; // Load timer value
 
     // Have a splash screen (arcade game style screen)
     // 1) Await Start button click 
