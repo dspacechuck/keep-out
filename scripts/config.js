@@ -77,6 +77,17 @@ export const levels = [
             }
         }
     ],
+    groundPlanes: [
+        {
+            x: 150,
+            y: 890,
+            width: 1600,
+            height: 20,
+            restitution: 0,
+            hasGhost: false,
+            options: groundOptions
+        }
+    ],
     timer: 30,
     greeting: 'Are you ready to banish some ghosts?',
     completeString: 'Great job!',
@@ -123,6 +134,17 @@ export const levels = [
             restitution: 0.5,
             hasGhost: false,
             canMove: true
+        }
+    ],
+    groundPlanes: [
+        {
+            x: 150,
+            y: 890,
+            width: 1600,
+            height: 20,
+            restitution: 0,
+            hasGhost: false,
+            options: groundOptions
         }
     ],
     timer: 30,
@@ -182,6 +204,17 @@ export const levels = [
             canMove: true
         }
     ],
+    groundPlanes: [
+        {
+            x: 150,
+            y: 890,
+            width: 1600,
+            height: 20,
+            restitution: 0,
+            hasGhost: false,
+            options: groundOptions
+        }
+    ],
     timer: 30,
     greeting: 'Not so easy now!',
     completeString: 'Well Done!',
@@ -236,3 +269,15 @@ export const ghostLevels = [
 },
 ];
 
+// contains save data for currrent game
+export const saveData = {
+    playerName: '',
+    date: 0,
+    currLevel: 1,
+    totalLives: 3,
+    livesLeft: 3,
+    totalPowerUps: 0,
+    powerUpsLeft: 0,
+    currScore: 0,
+    totalScore: 0,
+}

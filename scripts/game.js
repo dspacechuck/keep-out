@@ -1,4 +1,4 @@
-import { startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels } from './config.js'; 
+import { startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels, saveData } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
@@ -22,7 +22,7 @@ const render = Render.create({
 const bodies = {
     sling: null,
     ball: null, 
-    groundPlane: null,
+    groundPlane: [],
     platforms: [],
     ghost: null
 }
@@ -270,23 +270,36 @@ const animateObjs = (levelParam) => {
 
 
 // Function to add elements to the world
-const addElements = () => {
-    let { 
-        mouse, 
-        mouseConstraint, 
-        firing 
-    } = controls;
+const addElements = (levelParam) => {
+    // let { 
+    //     mouse, 
+    //     mouseConstraint, 
+    //     firing 
+    // } = controls;
 
-    let {
-        sling,
-        ball,
-        groundPlane,
-        platforms,
-        ghost
-    } = bodies;
+    // let {
+    //     sling,
+    //     ball,
+    //     groundPlane,
+    //     platforms,
+    //     ghost
+    // } = bodies;
+
+    createSling(levelParam);
+
+    const groundPlanes = levelParam.groundPlanes;
+
+    console.log("addElements levelParam: ", levelParam);
     
+    groundPlanes.forEach((ground, i) => {
+        bodies.groundPlane[i] = Bodies.rectangle(ground.x, ground.y, ground.width, ground.height, ground.options);
+        console.log(bodies.groundPlane[i]);
+    });
+
+
+
     // Bodies and body-supporting functions
-    bodies.groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
+    // bodies.groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
     
     // load a svg file and parse it with image/svg+xml params
     const loadSvg = (filePath) => {
@@ -301,6 +314,7 @@ const addElements = () => {
         return Array.prototype.slice.call(root.querySelectorAll(selector));
     };
 
+    // This function can be used to load any SVG into an object in the game
     const addAGhost = () => {
         ([
             './assets/ghost-freepik-inkscape-svg.svg', 
@@ -339,10 +353,12 @@ const addElements = () => {
     
     addAGhost();
 
+    addPlatforms(levelParam);
+
     console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
  
     // Add items to world
-    World.add(engine.world, [bodies.groundPlane]);
+    World.add(engine.world, [...bodies.groundPlane]);
 
 
 }
@@ -364,6 +380,12 @@ const addObjs = () => {
     // World.add(engine.world, [groundPlane, ball, platform, mouseConstraint, sling]);
 }
 
+// Gets level timer
+const loadLevelTimer = () => {
+    levelStates.timeLeft = currLevelObj.timer; // Load timer value
+    levelStates.timeAtStart = currLevelObj.timer; // Load time-at-start value
+}
+
 const runEngine = () => {
     Runner.run(engine);
     Render.run(render);
@@ -373,11 +395,8 @@ console.log("level 1");
 console.log(levels[0]);
 
 // params: x, y, radius, restitution, inertia
-createSling(levels[0]);
-addPlatforms(levels[0]);
-
-// params: 
-addElements();
+// createSling(levels[0]);
+// addElements(levels[0]);
 // addDetector();
 
 // add all objects to the world
@@ -387,8 +406,8 @@ runEngine();
 $(document).ready(() => {
     console.log('game is loaded!');
     addUIListeners();
-    levelStates.timeLeft = currLevelObj.timer; // Load timer value
-    levelStates.timeAtStart = currLevelObj.timer; // Load time-at-start value
+    addElements(levels[0]);
+    loadLevelTimer();
 
     // Have a splash screen (arcade game style screen)
     // 1) Await Start button click 
