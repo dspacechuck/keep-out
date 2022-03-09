@@ -27,8 +27,10 @@ const bodies = {
     ghost: null
 }
 
-// Cache Start button selector
+// Cache DOM element selectors
 const startBtn = document.querySelector('.startBtn');
+const timerBar = document.querySelector('.timerDiv');
+const currTimeEl = document.querySelector('.myTime');
 
 // Define controls
 const controls = {
@@ -42,6 +44,7 @@ const controls = {
 // Define level states 
 const levelStates = {
     currLevel: 0,
+    timeAtStart: 30,
     timeLeft: null,
     timerHandle: null
 }
@@ -65,12 +68,35 @@ const ballOptions = {
 // Tracks current level
 const currLevelObj = levels.find((level) => {return level.currentLevel === true});
 
+// TODO: no need to use this after refactoring
 const checkGameStatus = (timeLeft) => {
     if(timeLeft <= 0) {
         console.log("Game lost");
         clearInterval(levelStates.timerHandle);
     }
 }
+
+// Helper function to count down the timer
+function countTimer() {
+	let timeLeft = levelStates.timeAtStart - Math.floor((tween.progress()*levelStates.timeAtStart));
+	// $('#count').text(timeLeft + 's');
+    currTimeEl.innerHTML=`${timeLeft}s`;
+}
+
+// GSAP timer update function
+const tween = gsap.from(timerBar, levelStates.timeAtStart, {
+    width: '100%',
+    ease: Linear.easeNone,
+    paused: true,
+    onStart: function() {
+        tween.ticker.fps(1);
+    },
+    onUpdate: countTimer,
+    onComplete: function(){ 
+    //   timerBar.addClass("complete");
+    }
+});
+
 
 // Starts/pauses countdown timer
 const countdownTimerMgr = () => {
@@ -85,16 +111,15 @@ const countdownTimerMgr = () => {
                 levelStates.timeLeft -= 1;
                 console.log(levelStates.timeLeft);
                 checkGameStatus(levelStates.timeLeft); // check to see if game is won or not
-
-                // Can we use a promise for checkGameStatus?
-
             }, 1000);  
+            tween.play();
         }
     } else {
         // pause timer
         if (levelStates.timeLeft > 1) {
             clearInterval(levelStates.timerHandle);
         }
+        tween.pause();
     }
    
 }
@@ -363,6 +388,7 @@ $(document).ready(() => {
     console.log('game is loaded!');
     addUIListeners();
     levelStates.timeLeft = currLevelObj.timer; // Load timer value
+    levelStates.timeAtStart = currLevelObj.timer; // Load time-at-start value
 
     // Have a splash screen (arcade game style screen)
     // 1) Await Start button click 

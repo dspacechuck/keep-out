@@ -77,7 +77,7 @@ export const levels = [
             }
         }
     ],
-    timer: 60,
+    timer: 30,
     greeting: 'Are you ready to banish some ghosts?',
     completeString: 'Great job!',
     currentLevel: true,
@@ -125,7 +125,7 @@ export const levels = [
             canMove: true
         }
     ],
-    timer: 60,
+    timer: 30,
     greeting: 'Who are you gonna call?',
     completeString: 'Level 2 complete!',
     currentLevel: false,
@@ -182,7 +182,7 @@ export const levels = [
             canMove: true
         }
     ],
-    timer: 60,
+    timer: 30,
     greeting: 'Not so easy now!',
     completeString: 'Well Done!',
     currentLevel: false,

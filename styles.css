@@ -96,7 +96,7 @@ svg {
 
 .timerDiv, 
 .timerDivBg {
-  width: 200px;
+  /* width: 200px; */
   height: 14px;
   border: 3px solid none;
   border-bottom-left-radius: 5px;
@@ -107,12 +107,13 @@ svg {
   background: orange;
   font-size: 1.7rem;
   font-weight: bold;
-  width: 30px;
+  width: 0px;
 }
 
 /* Timer progress bar background */
 .timerDivBg {
-  background: rgb(171, 72, 180);;
+  background: rgb(171, 72, 180);
+  width: 200px;
 }
 
 
