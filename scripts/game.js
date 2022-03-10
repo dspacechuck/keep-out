@@ -107,6 +107,14 @@ const countdownTimerMgr = () => {
     // If game state is ON, start timer
     if (controls.startState) {
         if (levelStates.timeLeft > 1) {
+            
+            World.add(engine.world, [controls.mouseConstraint]);
+            Events.on(controls.mouseConstraint, 'enddrag', (e) => {
+                if (e.body === bodies.ball) {
+                    controls.firing = true;
+                }
+            })
+            
             levelStates.timerHandle = setInterval(() => {
                 levelStates.timeLeft -= 1;
                 console.log(levelStates.timeLeft);
@@ -117,6 +125,8 @@ const countdownTimerMgr = () => {
     } else {
         // pause timer
         if (levelStates.timeLeft > 1) {
+            Events.off(controls.mouseConstraint);
+            World.remove(engine.world, [controls.mouseConstraint]);
             clearInterval(levelStates.timerHandle);
         }
         tween.pause();
@@ -151,19 +161,25 @@ const addUIListeners = () => {
 
 // Detect scoring
 // param: ghostObj destructured into velocity, angle, and position
-const scoreDetector = ({velocity, angle, position}) => {
+const scoreDetector = (ghostObj) => {
 
-    console.log(velocity, angle, position)
+    
 
-    const notMoving = (velocity.x === 0 && velocity.y === 0);
+    if (ghostObj) {
+        const {velocity, angle, position} = ghostObj;
+        // console.log(velocity, angle, position)
+    
+        const notMoving = (velocity.x === 0 && velocity.y === 0);
+    
+        // console.log('not moving? ', notMoving);
+    
+        const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
+    
+        // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
+        if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
+            console.log("You won!");
+        }
 
-    console.log('not moving? ', notMoving);
-
-    const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
-
-    // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
-    if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
-        console.log("You won!");
     }
 }
 
@@ -212,10 +228,6 @@ const createSling = (levelParam) => {
         length: 0,
     });
     
-    console.log(bodies.sling);
-
-
-
 
     Events.on(engine, 'collisionEnd', (e) => {
 
@@ -245,11 +257,11 @@ const createSling = (levelParam) => {
 
     })
 
-    Events.on(controls.mouseConstraint, 'enddrag', (e) => {
-        if (e.body === bodies.ball) {
-            controls.firing = true;
-        }
-    })
+    // Events.on(controls.mouseConstraint, 'enddrag', (e) => {
+    //     if (e.body === bodies.ball) {
+    //         controls.firing = true;
+    //     }
+    // })
 
     Events.on(engine, 'afterUpdate', () => {
          if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
@@ -266,14 +278,12 @@ const createSling = (levelParam) => {
             console.log(controls.firing);
         }  
 
-        // TODO: decide how to invoke scoreDetector. do it in this event handler or elsewhere?
-        // setInterval(() => {
-            // scoreDetector(bodies.ghost);
-        //     // console.log('update')
-        // }, 1000);
+        scoreDetector(bodies.ghost);
+
     });
 
-    World.add(engine.world, [bodies.ball, controls.mouseConstraint, bodies.sling]);
+    // World.add(engine.world, [bodies.ball, controls.mouseConstraint, bodies.sling]);
+    World.add(engine.world, [bodies.ball, bodies.sling]);
 }
 
 // Function to add platforms to the world
@@ -413,11 +423,6 @@ const addElements = (levelParam) => {
 
 }
 
-// Function to detect ghost collisions (for scoring)
-const ghostHit = () => {
-    console.log(bodies.ghost);
-}
-
 // Gets level timer
 const loadLevelTimer = () => {
     levelStates.timeLeft = currLevelObj.timer; // Load timer value
@@ -457,6 +462,7 @@ $(document).ready(() => {
 
     const testBtn = document.querySelector('.testBtn');
 
+    // button to debug game
     testBtn.addEventListener('click', () => {
         console.log(bodies.ghost);
         scoreDetector(bodies.ghost);
