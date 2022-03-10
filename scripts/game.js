@@ -1,4 +1,4 @@
-import { startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels, saveData } from './config.js'; 
+import { canvasProps, startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
@@ -10,8 +10,8 @@ const render = Render.create({
     element: gameCanvas,
     engine: engine,
     options: {
-        width: 900,
-        height: 900,
+        width: canvasProps.width,
+        height: canvasProps.height,
         wireframes: false,
         showPerformance: true,
         background: 'rgba(0,0,0,0)',     
@@ -88,9 +88,9 @@ const tween = gsap.from(timerBar, levelStates.timeAtStart, {
     width: '100%',
     ease: Linear.easeNone,
     paused: true,
-    onStart: function() {
-        tween.ticker.fps(1);
-    },
+    // onStart: function() {
+    //     tween.ticker.fps(1);
+    // },
     onUpdate: countTimer,
     onComplete: function(){ 
     //   timerBar.addClass("complete");
@@ -149,7 +149,23 @@ const addUIListeners = () => {
     });
 }
 
+// Detect scoring
+// param: ghostObj destructured into velocity, angle, and position
+const scoreDetector = ({velocity, angle, position}) => {
 
+    console.log(velocity, angle, position)
+
+    const notMoving = (velocity.x === 0 && velocity.y === 0);
+
+    console.log('not moving? ', notMoving);
+
+    const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
+
+    // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
+    if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
+        console.log("You won!");
+    }
+}
 
 // Function to add a sling to the world and setup mouse constraint
 const createSling = (levelParam) => {  
@@ -198,20 +214,36 @@ const createSling = (levelParam) => {
     
     console.log(bodies.sling);
 
-    // Events.on(engine, 'collisionEnd', (e) => {
 
-    //     const pairs = e.pairs;
 
-    //     // bodyB is the object that got hit by the ball
-    //     if (pairs) {
-    //         console.log("there is a collision");
-    //             pairs.forEach(pair => {
-    //             pair.bodyA.render.fillStyle = 'red';
-    //             console.log(pair.bodyB);
-    //         })
-    //     }
 
-    // })
+    Events.on(engine, 'collisionEnd', (e) => {
+
+        const pairs = e.pairs;
+       
+        pairs?.forEach(pair => {
+            // pair.bodyB.label === 'ghost' 
+            console.log(pair);
+            if (pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') {
+                console.log('ghost was hit')
+                console.log(bodies.ghost);
+                saveData.ghostHits++;
+                console.log(saveData.ghostHits);
+                // World.remove(engine.world, bodies.ghost);
+            }
+        })
+
+        // Has ghost been pushed off the platform and/or off the screen?
+        // If yes > remove ghost (with animation) from engine.world.
+        
+        // Scenario 1: ghost has been hit but came to a stop no longer upright
+        // bodies.ghost.velocity = { x: 0, y: 0} && ghost has been hit && ghost angle > 0.1
+        // OR
+        
+        // Scenario 2: ghost has been hit, is no longer upright, and is off the x and y extents of the canvas
+
+
+    })
 
     Events.on(controls.mouseConstraint, 'enddrag', (e) => {
         if (e.body === bodies.ball) {
@@ -233,6 +265,12 @@ const createSling = (levelParam) => {
 
             console.log(controls.firing);
         }  
+
+        // TODO: decide how to invoke scoreDetector. do it in this event handler or elsewhere?
+        // setInterval(() => {
+            // scoreDetector(bodies.ghost);
+        //     // console.log('update')
+        // }, 1000);
     });
 
     World.add(engine.world, [bodies.ball, controls.mouseConstraint, bodies.sling]);
@@ -284,10 +322,11 @@ const addElements = (levelParam) => {
     //     platforms,
     //     ghost
     // } = bodies;
+    const groundPlanes = levelParam.groundPlanes;
+    const currLvlGhosts = levelParam.ghost;
+
 
     createSling(levelParam);
-
-    const groundPlanes = levelParam.groundPlanes;
 
     console.log("addElements levelParam: ", levelParam);
     
@@ -314,8 +353,17 @@ const addElements = (levelParam) => {
         return Array.prototype.slice.call(root.querySelectorAll(selector));
     };
 
+
+    // currLvlGhosts
+    // Gets each ghost in the currLevlGhosts object
+
+    // for (const diffLvl in currLvlGhosts) {
+    //     console.log(`${diffLvl}: ${object[diffLvl]}`);
+    //   }
+
+
     // This function can be used to load any SVG into an object in the game
-    const addAGhost = () => {
+    const addGhost = () => {
         ([
             './assets/ghost-freepik-inkscape-svg.svg', 
         ]).forEach(function(path, i) { 
@@ -351,9 +399,11 @@ const addElements = (levelParam) => {
         });
     }
     
-    addAGhost();
+    addGhost();
 
     addPlatforms(levelParam);
+
+    console.log(bodies.ghost);
 
     console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
  
@@ -363,21 +413,9 @@ const addElements = (levelParam) => {
 
 }
 
-// Function to add all generated items to the world
-const addObjs = () => {
-    // let { 
-    //     mouse, 
-    //     mouseConstraint, 
-    //     firing 
-    // } = controls;
-
-    // let {
-    //     sling,
-    //     ball,
-    //     groundPlane,
-    //     platform
-    // } = bodies;
-    // World.add(engine.world, [groundPlane, ball, platform, mouseConstraint, sling]);
+// Function to detect ghost collisions (for scoring)
+const ghostHit = () => {
+    console.log(bodies.ghost);
 }
 
 // Gets level timer
@@ -400,7 +438,6 @@ console.log(levels[0]);
 // addDetector();
 
 // add all objects to the world
-addObjs();
 runEngine();
 
 $(document).ready(() => {
@@ -408,7 +445,6 @@ $(document).ready(() => {
     addUIListeners();
     addElements(levels[0]);
     loadLevelTimer();
-
     // Have a splash screen (arcade game style screen)
     // 1) Await Start button click 
     // 2) Show instructions + animate slingshot movement
@@ -417,5 +453,14 @@ $(document).ready(() => {
     // 5) run game
         // 5.1 (start countdown clock) 
        // 5.2 (i.e.: animate any objects as necessary)
+
+
+    const testBtn = document.querySelector('.testBtn');
+
+    testBtn.addEventListener('click', () => {
+        console.log(bodies.ghost);
+        scoreDetector(bodies.ghost);
+    });
+
 
 });

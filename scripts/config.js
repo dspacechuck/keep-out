@@ -4,6 +4,11 @@ export const startBtnProps = {
     pauseString: 'PAUSE'
 };
 
+export const canvasProps = {
+    width: 900,
+    height: 900
+}
+
 export const renderConfig = {
     // options: {
     //     width: 800,
@@ -16,6 +21,21 @@ export const renderConfig = {
 export const groundOptions = {
     isStatic: true
 }
+
+export const ghostTypes = [
+    {easy: {
+        name: 'Rufus',
+        path: 'assets/ghost-freepik.png'
+    }},
+    {mid: {
+        name: 'Twinko',
+        path: 'assets/ghost-freepik-yellow.png'
+    }},
+    {hard: {
+        name: 'Drako',
+        path: 'assets/ghost-freepik-green.png'
+    }}
+]
 
 //  Define different movement modes for game objects
 //  Easing method and types are for GSAP motion library use: https://greensock.com/docs/v3/Eases
@@ -276,6 +296,7 @@ export const saveData = {
     currLevel: 1,
     totalLives: 3,
     livesLeft: 3,
+    ghostHits: 0,
     totalPowerUps: 0,
     powerUpsLeft: 0,
     currScore: 0,
