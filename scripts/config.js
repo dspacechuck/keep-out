@@ -293,7 +293,10 @@ export const ghostLevels = [
 export const saveData = {
     playerName: '',
     date: 0,
-    currLevel: 1,
+    currLevel: 0,
+    bumpLevel: function() {this.currLevel ++},
+    // bumpLevel: function() {this.currentLevel = true}, 
+    timeLeftAtEnd: 0, 
     totalLives: 3,
     livesLeft: 3,
     ghostHits: 0,
@@ -301,4 +304,5 @@ export const saveData = {
     powerUpsLeft: 0,
     currScore: 0,
     totalScore: 0,
+    inSession: false
 }

@@ -65,22 +65,34 @@ const ballOptions = {
     }
 }
 
-// Tracks current level
-const currLevelObj = levels.find((level) => {return level.currentLevel === true});
-
-// TODO: no need to use this after refactoring
-const checkGameStatus = (timeLeft) => {
-    if(timeLeft <= 0) {
-        console.log("Game lost");
-        clearInterval(levelStates.timerHandle);
+// Toggles mouse control ON/OFF
+const activateMouse = (status) => {
+    if (status) {
+        World.add(engine.world, [controls.mouseConstraint]);
+        Events.on(controls.mouseConstraint, 'enddrag', (e) => {
+            if (e.body === bodies.ball) {
+                controls.firing = true;
+            }
+        })
+    } else {
+        Events.off(controls.mouseConstraint);
+        World.remove(engine.world, [controls.mouseConstraint]);
     }
 }
 
+// Tracks current level
+// const currLevelObj = levels.find((level) => {return level.currentLevel === true});
+const currLevelObj = levels[saveData.currLevel];
+
 // Helper function to count down the timer
-function countTimer() {
+// Param saveTime is used to save time left into the save file
+function countTimer(saveTime = false) {
 	let timeLeft = levelStates.timeAtStart - Math.floor((tween.progress()*levelStates.timeAtStart));
-	// $('#count').text(timeLeft + 's');
     currTimeEl.innerHTML=`${timeLeft}s`;
+    if (saveTime) {
+        currLevelObj.timeLeftAtEnd = timeLeft;
+        console.log("time left at end of game: ", currLevelObj.timeLeftAtEnd);
+    }
 }
 
 // GSAP timer update function
@@ -94,6 +106,7 @@ const tween = gsap.from(timerBar, levelStates.timeAtStart, {
     onUpdate: countTimer,
     onComplete: function(){ 
     //   timerBar.addClass("complete");
+        invokeGameLost();
     }
 });
 
@@ -106,34 +119,17 @@ const countdownTimerMgr = () => {
 
     // If game state is ON, start timer
     if (controls.startState) {
-        if (levelStates.timeLeft > 1) {
-            
-            World.add(engine.world, [controls.mouseConstraint]);
-            Events.on(controls.mouseConstraint, 'enddrag', (e) => {
-                if (e.body === bodies.ball) {
-                    controls.firing = true;
-                }
-            })
-            
-            levelStates.timerHandle = setInterval(() => {
-                levelStates.timeLeft -= 1;
-                console.log(levelStates.timeLeft);
-                checkGameStatus(levelStates.timeLeft); // check to see if game is won or not
-            }, 1000);  
-            tween.play();
-        }
+        activateMouse(true);
+        tween.play();
     } else {
         // pause timer
-        if (levelStates.timeLeft > 1) {
-            Events.off(controls.mouseConstraint);
-            World.remove(engine.world, [controls.mouseConstraint]);
-            clearInterval(levelStates.timerHandle);
-        }
+        activateMouse(false);
         tween.pause();
     }
    
 }
 
+// TODO: consider removing or refactoring this later
 const toggleStartButtonState = () => {
     if (controls.startState) {
         startBtn.innerHTML=startBtnProps.pauseString;
@@ -144,43 +140,147 @@ const toggleStartButtonState = () => {
     }
 }
 
-// Add start button event listener
+// Sets start button explicitly to ON/OFF
+// const setStartButtonState = (btnState) => {
+//     if (btnState) {
+//         startBtn.innerHTML=startBtnProps.pauseString;
+//         startBtn.classList.add('btnAltProps');
+//     } else {
+//         startBtn.innerHTML=startBtnProps.startString;
+//         startBtn.classList.remove('btnAltProps');
+//     }
+// }
+
+// Add/remove start button event listener
 // onClick => change button text to "pause" and start game
-const addUIListeners = () => {
-    startBtn.addEventListener('click', (e) => {
+const activateStartBtn = (listenerOn) => {
+    if(listenerOn) {
+        startBtn.addEventListener('click', (e) => {
         
-        controls.toggleState();
-        countdownTimerMgr();
+            controls.toggleState();
+            countdownTimerMgr();
+    
+            // 1) Add/remove mouse constraint
+            // 2) Toggle button text
+            toggleStartButtonState();
+    
+        });
+    } else {
+        startBtn.removeEventListener('click', (e) => {
+            controls.toggleState();
+            countdownTimerMgr();
+    
+            // 1) Add/remove mouse constraint
+            // 2) Toggle button text
+            toggleStartButtonState();
+        });
+    }
 
-        // 1) Add/remove mouse constraint
-        // 2) Toggle button text
-        toggleStartButtonState();
+}
 
-    });
+
+// Declares game lost 
+// Cleans up event handlers
+// Prevents ball launch
+// Pauses timer
+// Disable start button
+// Awards scores
+// Saves data
+const invokeGameLost = () => {
+    console.log('Game Lost!');
+    activateEngineListeners(false);
+    activateMouse(false);
+    tween.pause();
+    activateStartBtn(false);
+}
+
+// Declares game won sequence
+// Cleans up event handlers
+// Prevents ball launch
+// Pauses timer
+// Disable start button
+// Awards scores
+// Saves data
+// Advance to next level
+const invokeGameWon = () => {
+    activateEngineListeners(false);
+    activateMouse(false);
+    tween.pause();
+    activateStartBtn(false);
+    countTimer(true);
+    saveData.bumpLevel();
+    console.log('current level: ', saveData.currLevel);
 }
 
 // Detect scoring
 // param: ghostObj destructured into velocity, angle, and position
 const scoreDetector = (ghostObj) => {
 
-    
-
     if (ghostObj) {
         const {velocity, angle, position} = ghostObj;
-        // console.log(velocity, angle, position)
     
         const notMoving = (velocity.x === 0 && velocity.y === 0);
-    
-        // console.log('not moving? ', notMoving);
-    
         const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
     
         // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
         if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
             console.log("You won!");
+            invokeGameWon();
         }
 
     }
+}
+
+// Turns ON/OFF matter.js listeners
+const activateEngineListeners = (status) => {
+
+    const levelParam = levels[0];
+
+    const ballProps = levelParam.ball;
+    const slingProps = levelParam.slingProps;
+
+    if (status) {
+        Events.on(engine, 'collisionEnd', (e) => {
+    
+            const pairs = e.pairs;
+           
+            pairs?.forEach(pair => {
+                // pair.bodyB.label === 'ghost' 
+                console.log(pair);
+                if (pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') {
+                    console.log('ghost was hit')
+                    console.log(bodies.ghost);
+                    saveData.ghostHits++;
+                    console.log(saveData.ghostHits);
+                    // World.remove(engine.world, bodies.ghost);
+                }
+            })
+    
+        })
+    
+        Events.on(engine, 'afterUpdate', () => {
+             if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
+                
+                bodies.ball.collisionFilter.category = solid;
+                bodies.ball.collisionFilter.mask = solid;
+    
+                bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+    
+                World.add(engine.world, bodies.ball); // 'launches' the ball
+                bodies.sling.bodyB = bodies.ball;
+                controls.firing = false;
+    
+                console.log(controls.firing);
+            }  
+    
+            scoreDetector(bodies.ghost);
+    
+        });
+    } else {
+        Events.off(engine);
+    }
+
+
 }
 
 // Function to add a sling to the world and setup mouse constraint
@@ -228,59 +328,44 @@ const createSling = (levelParam) => {
         length: 0,
     });
     
+    activateEngineListeners(true);
 
-    Events.on(engine, 'collisionEnd', (e) => {
+    // Events.on(engine, 'collisionEnd', (e) => {
 
-        const pairs = e.pairs;
+    //     const pairs = e.pairs;
        
-        pairs?.forEach(pair => {
-            // pair.bodyB.label === 'ghost' 
-            console.log(pair);
-            if (pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') {
-                console.log('ghost was hit')
-                console.log(bodies.ghost);
-                saveData.ghostHits++;
-                console.log(saveData.ghostHits);
-                // World.remove(engine.world, bodies.ghost);
-            }
-        })
+    //     pairs?.forEach(pair => {
+    //         // pair.bodyB.label === 'ghost' 
+    //         console.log(pair);
+    //         if (pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') {
+    //             console.log('ghost was hit')
+    //             console.log(bodies.ghost);
+    //             saveData.ghostHits++;
+    //             console.log(saveData.ghostHits);
+    //             // World.remove(engine.world, bodies.ghost);
+    //         }
+    //     })
 
-        // Has ghost been pushed off the platform and/or off the screen?
-        // If yes > remove ghost (with animation) from engine.world.
-        
-        // Scenario 1: ghost has been hit but came to a stop no longer upright
-        // bodies.ghost.velocity = { x: 0, y: 0} && ghost has been hit && ghost angle > 0.1
-        // OR
-        
-        // Scenario 2: ghost has been hit, is no longer upright, and is off the x and y extents of the canvas
-
-
-    })
-
-    // Events.on(controls.mouseConstraint, 'enddrag', (e) => {
-    //     if (e.body === bodies.ball) {
-    //         controls.firing = true;
-    //     }
     // })
 
-    Events.on(engine, 'afterUpdate', () => {
-         if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
+    // Events.on(engine, 'afterUpdate', () => {
+    //      if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
             
-            bodies.ball.collisionFilter.category = solid;
-            bodies.ball.collisionFilter.mask = solid;
+    //         bodies.ball.collisionFilter.category = solid;
+    //         bodies.ball.collisionFilter.mask = solid;
 
-            bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+    //         bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
 
-            World.add(engine.world, bodies.ball); // 'launches' the ball
-            bodies.sling.bodyB = bodies.ball;
-            controls.firing = false;
+    //         World.add(engine.world, bodies.ball); // 'launches' the ball
+    //         bodies.sling.bodyB = bodies.ball;
+    //         controls.firing = false;
 
-            console.log(controls.firing);
-        }  
+    //         console.log(controls.firing);
+    //     }  
 
-        scoreDetector(bodies.ghost);
+    //     scoreDetector(bodies.ghost);
 
-    });
+    // });
 
     // World.add(engine.world, [bodies.ball, controls.mouseConstraint, bodies.sling]);
     World.add(engine.world, [bodies.ball, bodies.sling]);
@@ -423,7 +508,7 @@ const addElements = (levelParam) => {
 
 }
 
-// Gets level timer
+// Loads level
 const loadLevelTimer = () => {
     levelStates.timeLeft = currLevelObj.timer; // Load timer value
     levelStates.timeAtStart = currLevelObj.timer; // Load time-at-start value
@@ -447,8 +532,8 @@ runEngine();
 
 $(document).ready(() => {
     console.log('game is loaded!');
-    addUIListeners();
-    addElements(levels[0]);
+    activateStartBtn(true);
+    addElements(currLevelObj);
     loadLevelTimer();
     // Have a splash screen (arcade game style screen)
     // 1) Await Start button click 
@@ -460,8 +545,8 @@ $(document).ready(() => {
        // 5.2 (i.e.: animate any objects as necessary)
 
 
+    // DEBUG Code only   
     const testBtn = document.querySelector('.testBtn');
-
     // button to debug game
     testBtn.addEventListener('click', () => {
         console.log(bodies.ghost);
