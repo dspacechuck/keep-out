@@ -164,6 +164,7 @@ const activateStartBtn = (listenerOn) => {
 // Prevents ball launch
 // Pauses timer
 // Disable start button
+
 // Awards scores
 // Saves data
 const invokeGameLost = () => {
@@ -205,7 +206,10 @@ const scoreDetector = (ghostObj) => {
         const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
     
         // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
-        if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
+        // if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
+
+        // Version 2= If ghost has toppled over clockwise or counterclockwise:
+        if (angle < -1.6 || angle > 1.2) {
             console.log("You won!");
             invokeGameWon();
         }
@@ -454,6 +458,7 @@ const addElements = (levelParam) => {
                     .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
     
                 bodies.ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
+                // bodies.ghost = Bodies.fromVertices(i + 150, i + 200, vertexSets, {
                     label: 'ghost',
                     render: {
                         fillStyle: 'yellow',
@@ -477,6 +482,13 @@ const addElements = (levelParam) => {
     }
     
     addGhost();
+
+    // In currLevelsObj.ghost, if any item is not an empty array:
+    // Find the name of this item in the ghostTypes array
+    // If there is a match, point the current ghost path to this path
+    // invoke addGhost for as many entires of ghosts there are in currLevelsObj.ghost.easy/mid/hard
+    // Keep doing this until all entires of easy, mid, and hard are iterated through and added to the map
+
 
     addPlatforms(levelParam);
 
@@ -531,12 +543,8 @@ $(document).ready(() => {
     const testBtn = document.querySelector('.testBtn');
     // button to debug game
     testBtn.addEventListener('click', () => {
-        // console.log(bodies.ghost);
-        // scoreDetector(bodies.ghost);
-    
-        $('.startBtn').off('click', function (e) {
-            console.log('start button OFF');
-        });
+        console.log(bodies.ghost);
+        scoreDetector(bodies.ghost);
     });
 
 

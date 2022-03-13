@@ -23,18 +23,20 @@ export const groundOptions = {
 }
 
 export const ghostTypes = [
-    {easy: {
-        name: 'Rufus',
-        path: 'assets/ghost-freepik.png'
-    }},
-    {mid: {
+    {   name: 'Rufus',
+        path: 'assets/ghost-freepik.png',
+        difficulty: easy
+    },
+    {
         name: 'Twinko',
-        path: 'assets/ghost-freepik-yellow.png'
-    }},
-    {hard: {
+        path: 'assets/ghost-freepik-yellow.png',
+        difficulty: mid
+    },
+    {
         name: 'Drako',
-        path: 'assets/ghost-freepik-green.png'
-    }}
+        path: 'assets/ghost-freepik-green.png',
+        difficulty: hard
+    }
 ]
 
 //  Define different movement modes for game objects
@@ -67,7 +69,11 @@ export const levels = [
             {
                 x: 650,
                 y: 300
-            }
+            },
+            // {
+            //     x: 300,
+            //     y: 200
+            // }
         ],
         mid: [],
         hard: []
