@@ -24,7 +24,8 @@ const bodies = {
     ball: null, 
     groundPlane: [],
     platforms: [],
-    ghost: null
+    // ghost: null,
+    ghost: []
 }
 
 // Cache DOM element selectors
@@ -197,24 +198,26 @@ const invokeGameWon = () => {
 
 // Detect scoring
 // param: ghostObj destructured into velocity, angle, and position
-const scoreDetector = (ghostObj) => {
+// const scoreDetector = (ghostObj) => {
+const scoreDetector = (ghostArr) => {
 
-    if (ghostObj) {
-        const {velocity, angle, position} = ghostObj;
-    
-        const notMoving = (velocity.x === 0 && velocity.y === 0);
-        const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
-    
-        // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
-        // if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
+// for each ghostObj in ghostArr, do the following:
 
-        // Version 2= If ghost has toppled over clockwise or counterclockwise:
-        if (angle < -1.6 || angle > 1.2) {
-            console.log("You won!");
-            invokeGameWon();
-        }
+ghostArr?.forEach((ghost) => {
+    const {velocity, angle, position} = ghost;
 
+    // const notMoving = (velocity.x === 0 && velocity.y === 0);
+    // const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
+
+    // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
+    // if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
+
+    // Version 2= If ghost has toppled over clockwise or counterclockwise:
+    if (angle < -1.6 || angle > 1.2) {
+        console.log("You won!");
+        invokeGameWon();
     }
+});
 }
 
 // Turns ON/OFF matter.js listeners
@@ -444,9 +447,10 @@ const addElements = (levelParam) => {
 
 
     // This function can be used to load any SVG into an object in the game
-    const addGhost = () => {
+    const addGhost = (ghostNum, ghostName, pngPath, svgPath, x, y) => {
         ([
-            './assets/ghost-freepik-inkscape-svg.svg', 
+            // './assets/ghost-freepik-inkscape-svg.svg', 
+            svgPath
         ]).forEach(function(path, i) { 
             console.log("Path and i below");
             console.log(path);
@@ -457,32 +461,30 @@ const addElements = (levelParam) => {
                 const vertexSets = select(root, 'path')
                     .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
     
-                bodies.ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
-                // bodies.ghost = Bodies.fromVertices(i + 150, i + 200, vertexSets, {
+                bodies.ghost[ghostNum] = Bodies.fromVertices(i + x, i + y, vertexSets, {
+                // bodies.ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
                     label: 'ghost',
                     render: {
                         fillStyle: 'yellow',
                         strokeStyle: '#f19648',
                         lineWidth: 1,
                         sprite: {
-                            texture: './assets/ghost-freepik.png',
+                            texture: pngPath,
                             xScale: 0.15,
                             yScale: 0.15
                         }
                     }
                 }, true);
     
-                World.add(engine.world, [bodies.ghost]);
+                World.add(engine.world, [bodies.ghost[ghostNum]]);
 
-                bodies.ghost.collisionFilter = { category: solid, mask: solid };
+                bodies.ghost[ghostNum].collisionFilter = { category: solid, mask: solid };
 
-                console.log(bodies.ghost);
+                console.log(bodies.ghost[ghostNum]);
             });
         });
     }
     
-    addGhost();
-
     // In currLevelsObj.ghost, if any item is not an empty array:
     // Find the name of this item in the ghostTypes array
     // If there is a match, point the current ghost path to this path
@@ -490,11 +492,39 @@ const addElements = (levelParam) => {
     // Keep doing this until all entires of easy, mid, and hard are iterated through and added to the map
 
 
+    let currGhostCount = 0;
+
+    // Function to iterate through the ghost property of the currLevelsObj and to load each and every ghost
+    for (const eachGhostType in currLevelObj.ghost) {
+
+        // If current ghost type is specified fo the current level:
+        if (eachGhostType) {
+            // Find the correct item within ghostType which matches this name
+            const currGhostType = ghostTypes.find((type) => type.difficulty === eachGhostType)
+    
+            console.log(eachGhostType);
+            console.log(currLevelObj.ghost[eachGhostType])
+    
+            // create a unique ghost name
+            const ghostName = currGhostType.name + currGhostCount;
+    
+            // Iterate through 
+            currLevelObj.ghost[eachGhostType]?.forEach(ghost => {
+                addGhost(currGhostCount, ghostName, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
+                currGhostCount ++;
+            })
+        }
+
+    }
+
+
+    //
+
     addPlatforms(levelParam);
 
-    console.log(bodies.ghost);
+    // console.log(bodies.ghost);
 
-    console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
+    // console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
  
     // Add items to world
     World.add(engine.world, [...bodies.groundPlane]);
@@ -544,7 +574,7 @@ $(document).ready(() => {
     // button to debug game
     testBtn.addEventListener('click', () => {
         console.log(bodies.ghost);
-        scoreDetector(bodies.ghost);
+        // scoreDetector(bodies.ghost);
     });
 
 

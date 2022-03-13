@@ -24,18 +24,21 @@ export const groundOptions = {
 
 export const ghostTypes = [
     {   name: 'Rufus',
-        path: 'assets/ghost-freepik.png',
-        difficulty: easy
+        pngPath: './assets/ghost-freepik.png',
+        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
+        difficulty: 'easy'
     },
     {
         name: 'Twinko',
-        path: 'assets/ghost-freepik-yellow.png',
-        difficulty: mid
+        pngPath: './assets/ghost-freepik-yellow.png',
+        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
+        difficulty: 'mid'
     },
     {
         name: 'Drako',
-        path: 'assets/ghost-freepik-green.png',
-        difficulty: hard
+        pngPath: './assets/ghost-freepik-green.png',
+        svgPath: './assets/ghost-freepik-inkscape-svg.svg',
+        difficulty: 'hard'
     }
 ]
 
@@ -70,10 +73,10 @@ export const levels = [
                 x: 650,
                 y: 300
             },
-            // {
-            //     x: 300,
-            //     y: 200
-            // }
+            {
+                x: 200,
+                y: 200
+            }
         ],
         mid: [],
         hard: []
