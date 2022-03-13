@@ -140,40 +140,20 @@ const toggleStartButtonState = () => {
     }
 }
 
-// Sets start button explicitly to ON/OFF
-// const setStartButtonState = (btnState) => {
-//     if (btnState) {
-//         startBtn.innerHTML=startBtnProps.pauseString;
-//         startBtn.classList.add('btnAltProps');
-//     } else {
-//         startBtn.innerHTML=startBtnProps.startString;
-//         startBtn.classList.remove('btnAltProps');
-//     }
-// }
+// Toggles start button state & launches countdown timer
+const startBtnOps = () => {
+    controls.toggleState();
+    countdownTimerMgr();
+    toggleStartButtonState();    
+}
 
 // Add/remove start button event listener
 // onClick => change button text to "pause" and start game
 const activateStartBtn = (listenerOn) => {
     if(listenerOn) {
-        startBtn.addEventListener('click', (e) => {
-        
-            controls.toggleState();
-            countdownTimerMgr();
-    
-            // 1) Add/remove mouse constraint
-            // 2) Toggle button text
-            toggleStartButtonState();
-    
-        });
+        startBtn.addEventListener('click', startBtnOps);
     } else {
-        startBtn.removeEventListener('click', (e) => {
-            controls.toggleState();
-            countdownTimerMgr();
-    
-            // 1) Add/remove mouse constraint
-            // 2) Toggle button text
-            toggleStartButtonState();
-        });
+        startBtn.removeEventListener('click', startBtnOps);
     }
 
 }
@@ -188,6 +168,7 @@ const activateStartBtn = (listenerOn) => {
 // Saves data
 const invokeGameLost = () => {
     console.log('Game Lost!');
+    controls.startState=false;
     activateEngineListeners(false);
     activateMouse(false);
     tween.pause();
@@ -203,6 +184,7 @@ const invokeGameLost = () => {
 // Saves data
 // Advance to next level
 const invokeGameWon = () => {
+    controls.startState=false;
     activateEngineListeners(false);
     activateMouse(false);
     tween.pause();
@@ -549,8 +531,12 @@ $(document).ready(() => {
     const testBtn = document.querySelector('.testBtn');
     // button to debug game
     testBtn.addEventListener('click', () => {
-        console.log(bodies.ghost);
-        scoreDetector(bodies.ghost);
+        // console.log(bodies.ghost);
+        // scoreDetector(bodies.ghost);
+    
+        $('.startBtn').off('click', function (e) {
+            console.log('start button OFF');
+        });
     });
 
 
