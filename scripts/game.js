@@ -84,6 +84,7 @@ const activateMouse = (status) => {
 // Tracks current level
 // const currLevelObj = levels.find((level) => {return level.currentLevel === true});
 const currLevelObj = levels[saveData.currLevel];
+// const currLevelObj = levels[2];
 
 // Helper function to count down the timer
 // Param saveTime is used to save time left into the save file
@@ -201,32 +202,48 @@ const invokeGameWon = () => {
 // const scoreDetector = (ghostObj) => {
 const scoreDetector = (ghostArr) => {
 
-// for each ghostObj in ghostArr, do the following:
+    // for each ghostObj in ghostArr, do the following:
 
-ghostArr?.forEach((ghost) => {
-    const {velocity, angle, position} = ghost;
-
-    // const notMoving = (velocity.x === 0 && velocity.y === 0);
-    // const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
-
-    // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
-    // if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
-
-    // Version 2= If ghost has toppled over clockwise or counterclockwise:
-    if (angle < -1.6 || angle > 1.2) {
-        console.log("You won!");
-        invokeGameWon();
+    if (controls.startState) {
+        ghostArr?.forEach((ghost) => {
+            const {velocity, angle, position} = ghost;
+    
+            // const notMoving = (velocity.x === 0 && velocity.y === 0);
+            // const isOffCanvas = position.x > canvasProps.width || position.y > canvasProps.height || position.x < 0 || position.y < 0;
+    
+            // If ghost has stopped moving OR if ghost has left the canvas (and no longer upright in both cases)
+            // if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
+    
+            // Version 2= If ghost has toppled over clockwise or counterclockwise:
+            if (angle < -1.6 || angle > 1.2) {
+                console.log("Ghost down!");
+                ghost.defeated = true;
+            }
+        });
+    
+        // If there are as many (ghost.defeated flag = true) entires in ghostArr as the length of the ghostArr, invokeGameWon():   
+        if  (ghostArr.every((ghost) => ghost.defeated)) {
+            console.log("You won!");
+            invokeGameWon();
+        }
     }
-});
+
+
+
 }
 
 // Turns ON/OFF matter.js listeners
 const activateEngineListeners = (status) => {
 
-    const levelParam = levels[0];
+    // const levelParam = levels[0];
 
-    const ballProps = levelParam.ball;
-    const slingProps = levelParam.slingProps;
+    // const levlParam = currLevelObj
+
+    // const ballProps = levelParam.ball;
+    // const slingProps = levelParam.slingProps;
+
+    const ballProps = currLevelObj.ball;
+    const slingProps = currLevelObj.slingProps;
 
     if (status) {
         Events.on(engine, 'collisionEnd', (e) => {

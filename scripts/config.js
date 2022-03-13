@@ -73,13 +73,23 @@ export const levels = [
                 x: 650,
                 y: 300
             },
-            {
-                x: 200,
-                y: 200
-            }
+            // {
+            //     x: 200,
+            //     y: 300
+            // }
         ],
-        mid: [],
-        hard: []
+        // mid: [
+        //     {
+        //         x: 100,
+        //         y: 300
+        //     },
+        // ],
+        // hard: [
+        //     {
+        //         x: 550,
+        //         y: 300
+        //     },
+        // ]
     },
     slingProps: {
         x: 300,
@@ -126,14 +136,12 @@ export const levels = [
 {
     level: 2,
     ghost: {
-        easy: 0,
         mid: [
             {
                 x: 250,
-                y: 300
+                y: 600
             }
         ],
-        hard: 0
     },
     slingProps: {
         x: 300,
@@ -185,8 +193,6 @@ export const levels = [
 {
     level: 3,
     ghost: {
-        easy: 0,
-        mid: 0,
         hard: [
             {
                 x: 650,
@@ -195,12 +201,12 @@ export const levels = [
         ],
     },
     slingProps: {
-        x: 20,
-        y: 200,
+        x: 150,
+        y: 250,
         k: 0.1
     },
     ball: {
-        radius: 0.5,
+        radius: 20,
         restitution: 1,
         inertia: 5,
     },
