@@ -22,23 +22,36 @@ export const groundOptions = {
     isStatic: true
 }
 
+// contains detials on scoreing
+export const scoreData = {
+    scoreBasis: 5, // number of points to award per each second of time left in game
+    rufusScoreBasis: 150, // for each Rufus ghost banished
+    twinkoScoreBasis: 300, // for each Twinko ghost banished
+    drakoScoreBasis: 600, // for each Drako ghost banished
+    perLevelBonus: 50, // for each level won (i.e.: level 2 will award 2 x 50 points)
+    livesLeftBonus: 10 // for each life remaining after level won 
+}
+
 export const ghostTypes = [
     {   name: 'Rufus',
         pngPath: './assets/ghost-freepik.png',
         svgPath: './assets/ghost-freepik-inkscape-svg.svg',
-        difficulty: 'easy'
+        difficulty: 'easy',
+        points: scoreData.rufusScoreBasis
     },
     {
         name: 'Twinko',
         pngPath: './assets/ghost-freepik-yellow.png',
         svgPath: './assets/ghost-freepik-inkscape-svg.svg',
-        difficulty: 'mid'
+        difficulty: 'mid',
+        points: scoreData.twinkoScoreBasis
     },
     {
         name: 'Drako',
         pngPath: './assets/ghost-freepik-green.png',
         svgPath: './assets/ghost-freepik-inkscape-svg.svg',
-        difficulty: 'hard'
+        difficulty: 'hard',
+        points: scoreData.drakoScoreBasis
     }
 ]
 
@@ -71,7 +84,7 @@ export const levels = [
         easy: [
             {
                 x: 650,
-                y: 300
+                y: 100
             },
             // {
             //     x: 200,
@@ -130,8 +143,8 @@ export const levels = [
     timer: 30,
     greeting: 'Are you ready to banish some ghosts?',
     completeString: 'Great job!',
-    currentLevel: true,
-    setCurrLevel: function() {this.currentLevel = true} 
+    // currentLevel: true,
+    // setCurrLevel: function() {this.currentLevel = true} 
 },
 {
     level: 2,
@@ -187,8 +200,8 @@ export const levels = [
     timer: 30,
     greeting: 'Who are you gonna call?',
     completeString: 'Level 2 complete!',
-    currentLevel: false,
-    setCurrLevel: function() {this.currentLevel = true} 
+    // currentLevel: false,
+    // setCurrLevel: function() {this.currentLevel = true} 
 },
 {
     level: 3,
@@ -253,8 +266,8 @@ export const levels = [
     timer: 30,
     greeting: 'Not so easy now!',
     completeString: 'Well Done!',
-    currentLevel: false,
-    setCurrLevel: function() {this.currentLevel = true} 
+    // currentLevel: false,
+    // setCurrLevel: function() {this.currentLevel = true} 
 }
 ];
 

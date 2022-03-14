@@ -1,4 +1,4 @@
-import { canvasProps, startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData } from './config.js'; 
+import { canvasProps, startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData, scoreData } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
@@ -50,6 +50,9 @@ const levelStates = {
     timerHandle: null
 }
 
+// Tracks current level
+const currLevelObj = levels[saveData.currLevel];
+
 // Setup bitmasks for collision filter
 const solid = 0x0001;
 const nextBall = 0x0004;
@@ -83,8 +86,46 @@ const activateMouse = (status) => {
 
 // Tracks current level
 // const currLevelObj = levels.find((level) => {return level.currentLevel === true});
-const currLevelObj = levels[saveData.currLevel];
+// const currLevelObj = levels[saveData.currLevel];
 // const currLevelObj = levels[2];
+
+// Calculate Scores at game end
+const calculateScores = (timeRem) => {
+    const {
+        scoreBasis,
+        rufusScoreBasis,
+        twinkoScoreBasis,
+        drakoScoreBasis,
+        perLevelBonus,
+        livesLeftBonus
+    } = scoreData;
+    
+    console.log(bodies.ghost);
+
+    const baseScore = timeRem * scoreBasis;
+
+    const ghostPoints = bodies.ghost
+        .map((type) => type.points)
+        .reduce((prevVal, currVal) => prevVal + currVal, 0); // creates an array of all ghost names to match
+
+    console.log('ghost points awarded: ', ghostPoints);
+
+
+    // iterate through the bodies.ghost array and check how many of each ghost there is
+    // const ghostsDefeated = bodies.ghost.filter((ghost) => ghost.name);
+
+    // const ghostScore = ghostsDefeated.map((eachGhost) => {
+
+
+
+    // });
+
+    // const score = 
+    //     timeRem * scoreBasis 
+    //     +
+    
+    // return score;
+}
 
 // Helper function to count down the timer
 // Param saveTime is used to save time left into the save file
@@ -94,6 +135,7 @@ function countTimer(saveTime = false) {
     if (saveTime) {
         currLevelObj.timeLeftAtEnd = timeLeft;
         console.log("time left at end of game: ", currLevelObj.timeLeftAtEnd);
+        calculateScores(timeLeft);
     }
 }
 
@@ -187,13 +229,15 @@ const invokeGameLost = () => {
 // Saves data
 // Advance to next level
 const invokeGameWon = () => {
+    console.log('Game Won!');
     controls.startState=false;
     activateEngineListeners(false);
     activateMouse(false);
     tween.pause();
     activateStartBtn(false);
+
     countTimer(true);
-    saveData.bumpLevel();
+    saveData.bumpLevel(); // advance to next level
     console.log('current level: ', saveData.currLevel);
 }
 
@@ -253,12 +297,15 @@ const activateEngineListeners = (status) => {
             pairs?.forEach(pair => {
                 // pair.bodyB.label === 'ghost' 
                 console.log(pair);
-                if (pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') {
+                if ((pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') && controls.startState) {
                     console.log('ghost was hit')
                     console.log(bodies.ghost);
                     saveData.ghostHits++;
                     console.log(saveData.ghostHits);
                     // World.remove(engine.world, bodies.ghost);
+
+                    scoreDetector(bodies.ghost);
+    
                 }
             })
     
@@ -279,7 +326,7 @@ const activateEngineListeners = (status) => {
                 console.log(controls.firing);
             }  
     
-            scoreDetector(bodies.ghost);
+            // scoreDetector(bodies.ghost);
     
         });
     } else {
@@ -464,7 +511,7 @@ const addElements = (levelParam) => {
 
 
     // This function can be used to load any SVG into an object in the game
-    const addGhost = (ghostNum, ghostName, pngPath, svgPath, x, y) => {
+    const addGhost = (ghostNum, ghostName, ghostPoints, pngPath, svgPath, x, y) => {
         ([
             // './assets/ghost-freepik-inkscape-svg.svg', 
             svgPath
@@ -492,6 +539,9 @@ const addElements = (levelParam) => {
                         }
                     }
                 }, true);
+
+                bodies.ghost[ghostNum].name = ghostName;
+                bodies.ghost[ghostNum].points = ghostPoints;
     
                 World.add(engine.world, [bodies.ghost[ghostNum]]);
 
@@ -524,10 +574,12 @@ const addElements = (levelParam) => {
     
             // create a unique ghost name
             const ghostName = currGhostType.name + currGhostCount;
+            
+            const ghostPoints = currGhostType.points;
     
             // Iterate through 
             currLevelObj.ghost[eachGhostType]?.forEach(ghost => {
-                addGhost(currGhostCount, ghostName, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
+                addGhost(currGhostCount, ghostName, ghostPoints, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
                 currGhostCount ++;
             })
         }
@@ -576,6 +628,10 @@ $(document).ready(() => {
     activateStartBtn(true);
     addElements(currLevelObj);
     loadLevelTimer();
+
+    console.log(engine.gravity.y) 
+    // engine.gravity.y = 0.2;
+
     // Have a splash screen (arcade game style screen)
     // 1) Await Start button click 
     // 2) Show instructions + animate slingshot movement
@@ -591,6 +647,7 @@ $(document).ready(() => {
     // button to debug game
     testBtn.addEventListener('click', () => {
         console.log(bodies.ghost);
+       Body.applyForce(bodies.ghost[0], {x: bodies.ghost[0].position.x, y: bodies.ghost[0].position.y}, {x: 0, y: -0.15});
         // scoreDetector(bodies.ghost);
     });
 
