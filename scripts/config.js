@@ -23,13 +23,21 @@ export const groundOptions = {
 }
 
 // contains detials on scoreing
+// "Tap" is a ghost hit
+// "Score" is if a ghost is knocked down
 export const scoreData = {
-    scoreBasis: 5, // number of points to award per each second of time left in game
+    scoreBasis: 20, // number of points to award per each second of time left in game
     rufusScoreBasis: 150, // for each Rufus ghost banished
+    rufusTapBasis: 25,
+    
     twinkoScoreBasis: 300, // for each Twinko ghost banished
+    twinkoTapBasis: 50,
+
     drakoScoreBasis: 600, // for each Drako ghost banished
-    perLevelBonus: 50, // for each level won (i.e.: level 2 will award 2 x 50 points)
-    livesLeftBonus: 10 // for each life remaining after level won 
+    drakoTapBasis: 100,
+    
+    perLevelBonus: 70, // for each level won (i.e.: level 2 will award 2 x 50 points)
+    livesLeftBonus: 100 // for each life remaining after level won 
 }
 
 export const ghostTypes = [
@@ -37,21 +45,24 @@ export const ghostTypes = [
         pngPath: './assets/ghost-freepik.png',
         svgPath: './assets/ghost-freepik-inkscape-svg.svg',
         difficulty: 'easy',
-        points: scoreData.rufusScoreBasis
+        perTapPoints: scoreData.rufusTapBasis,
+        points: scoreData.rufusScoreBasis // points for defeating this ghost
     },
     {
         name: 'Twinko',
         pngPath: './assets/ghost-freepik-yellow.png',
         svgPath: './assets/ghost-freepik-inkscape-svg.svg',
         difficulty: 'mid',
-        points: scoreData.twinkoScoreBasis
+        perTapPoints: scoreData.twinkoTapBasis,
+        points: scoreData.twinkoScoreBasis // points for defeating this ghost
     },
     {
         name: 'Drako',
         pngPath: './assets/ghost-freepik-green.png',
         svgPath: './assets/ghost-freepik-inkscape-svg.svg',
         difficulty: 'hard',
-        points: scoreData.drakoScoreBasis
+        perTapPoints: scoreData.drakoTapBasis,
+        points: scoreData.drakoScoreBasis // points for defeating this ghost
     }
 ]
 
@@ -85,11 +96,12 @@ export const levels = [
             {
                 x: 650,
                 y: 100
+                // y: 600
             },
-            // {
-            //     x: 200,
-            //     y: 300
-            // }
+            {
+                x: 200,
+                y: 300
+            }
         ],
         // mid: [
         //     {
@@ -330,7 +342,7 @@ export const saveData = {
     ghostHits: 0,
     totalPowerUps: 0,
     powerUpsLeft: 0,
-    currScore: 0,
+    currScore: 0, // score for this level
     totalScore: 0,
     inSession: false
 }

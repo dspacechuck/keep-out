@@ -32,6 +32,7 @@ const bodies = {
 const startBtn = document.querySelector('.startBtn');
 const timerBar = document.querySelector('.timerDiv');
 const currTimeEl = document.querySelector('.myTime');
+const scoreEl = document.querySelector('.myScore');
 
 // Define controls
 const controls = {
@@ -89,13 +90,18 @@ const activateMouse = (status) => {
 // const currLevelObj = levels[saveData.currLevel];
 // const currLevelObj = levels[2];
 
+// Function to show scores to UI
+const showScores = (currScore) => {
+    // TODO: Use gsap to animate score count up to awarded score
+    saveData.currScore = currScore;
+    scoreEl.innerHTML = currScore;
+
+}
+
 // Calculate Scores at game end
-const calculateScores = (timeRem) => {
+const finalizeScores = (timeRem) => {
     const {
         scoreBasis,
-        rufusScoreBasis,
-        twinkoScoreBasis,
-        drakoScoreBasis,
         perLevelBonus,
         livesLeftBonus
     } = scoreData;
@@ -104,27 +110,21 @@ const calculateScores = (timeRem) => {
 
     const baseScore = timeRem * scoreBasis;
 
-    const ghostPoints = bodies.ghost
+    const ghostScore = bodies.ghost
         .map((type) => type.points)
         .reduce((prevVal, currVal) => prevVal + currVal, 0); // creates an array of all ghost names to match
 
-    console.log('ghost points awarded: ', ghostPoints);
+    const levelScore = perLevelBonus * (saveData.currLevel + 1);
+    const livesLeftScore = livesLeftBonus * saveData.livesLeft;    
+    const score = baseScore + ghostScore + levelScore + livesLeftScore + saveData.currScore;
+
+    console.log("Points awarded: ", {baseScore}, {ghostScore}, {levelScore}, {livesLeftScore});
+    console.log("Your final score is: ", score);
+
+    // Save score to saveData file
 
 
-    // iterate through the bodies.ghost array and check how many of each ghost there is
-    // const ghostsDefeated = bodies.ghost.filter((ghost) => ghost.name);
-
-    // const ghostScore = ghostsDefeated.map((eachGhost) => {
-
-
-
-    // });
-
-    // const score = 
-    //     timeRem * scoreBasis 
-    //     +
-    
-    // return score;
+    return score;
 }
 
 // Helper function to count down the timer
@@ -135,7 +135,7 @@ function countTimer(saveTime = false) {
     if (saveTime) {
         currLevelObj.timeLeftAtEnd = timeLeft;
         console.log("time left at end of game: ", currLevelObj.timeLeftAtEnd);
-        calculateScores(timeLeft);
+        showScores(finalizeScores(timeLeft));
     }
 }
 
@@ -241,6 +241,15 @@ const invokeGameWon = () => {
     console.log('current level: ', saveData.currLevel);
 }
 
+// Awards the player for hitting the ghost
+const awardGhostTaps = (currGhost) => {
+    console.log("tapped");
+    console.log(currGhost);
+
+    saveData.currScore += currGhost.tapPoints;
+    showScores(saveData.currScore);
+}
+
 // Detect scoring
 // param: ghostObj destructured into velocity, angle, and position
 // const scoreDetector = (ghostObj) => {
@@ -262,6 +271,10 @@ const scoreDetector = (ghostArr) => {
             if (angle < -1.6 || angle > 1.2) {
                 console.log("Ghost down!");
                 ghost.defeated = true;
+            } 
+            else {
+                // ghost was hit but not knocked down
+                awardGhostTaps(ghost);
             }
         });
     
@@ -272,19 +285,10 @@ const scoreDetector = (ghostArr) => {
         }
     }
 
-
-
 }
 
 // Turns ON/OFF matter.js listeners
 const activateEngineListeners = (status) => {
-
-    // const levelParam = levels[0];
-
-    // const levlParam = currLevelObj
-
-    // const ballProps = levelParam.ball;
-    // const slingProps = levelParam.slingProps;
 
     const ballProps = currLevelObj.ball;
     const slingProps = currLevelObj.slingProps;
@@ -501,17 +505,8 @@ const addElements = (levelParam) => {
         return Array.prototype.slice.call(root.querySelectorAll(selector));
     };
 
-
-    // currLvlGhosts
-    // Gets each ghost in the currLevlGhosts object
-
-    // for (const diffLvl in currLvlGhosts) {
-    //     console.log(`${diffLvl}: ${object[diffLvl]}`);
-    //   }
-
-
     // This function can be used to load any SVG into an object in the game
-    const addGhost = (ghostNum, ghostName, ghostPoints, pngPath, svgPath, x, y) => {
+    const addGhost = (ghostNum, ghostName, ghostTapPoints, ghostPoints, pngPath, svgPath, x, y) => {
         ([
             // './assets/ghost-freepik-inkscape-svg.svg', 
             svgPath
@@ -542,6 +537,7 @@ const addElements = (levelParam) => {
 
                 bodies.ghost[ghostNum].name = ghostName;
                 bodies.ghost[ghostNum].points = ghostPoints;
+                bodies.ghost[ghostNum].tapPoints = ghostTapPoints
     
                 World.add(engine.world, [bodies.ghost[ghostNum]]);
 
@@ -575,11 +571,12 @@ const addElements = (levelParam) => {
             // create a unique ghost name
             const ghostName = currGhostType.name + currGhostCount;
             
+            const ghostTapPoints = currGhostType.perTapPoints;
             const ghostPoints = currGhostType.points;
     
-            // Iterate through 
+            // Iterate through the current level object and add all ghosts specified
             currLevelObj.ghost[eachGhostType]?.forEach(ghost => {
-                addGhost(currGhostCount, ghostName, ghostPoints, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
+                addGhost(currGhostCount, ghostName, ghostTapPoints, ghostPoints, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
                 currGhostCount ++;
             })
         }
@@ -647,7 +644,7 @@ $(document).ready(() => {
     // button to debug game
     testBtn.addEventListener('click', () => {
         console.log(bodies.ghost);
-       Body.applyForce(bodies.ghost[0], {x: bodies.ghost[0].position.x, y: bodies.ghost[0].position.y}, {x: 0, y: -0.15});
+    //    Body.applyForce(bodies.ghost[0], {x: bodies.ghost[0].position.x, y: bodies.ghost[0].position.y}, {x: 0, y: -0.15});
         // scoreDetector(bodies.ghost);
     });
 
