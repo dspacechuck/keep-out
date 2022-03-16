@@ -1,4 +1,4 @@
-import { canvasProps, startBtnProps, renderConfig, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData, scoreData } from './config.js'; 
+import { canvasProps, startBtnProps, renderConfig, ballOptions, sensorOptions, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData, scoreData } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
@@ -58,17 +58,8 @@ const currLevelObj = levels[saveData.currLevel];
 const solid = 0x0001;
 const nextBall = 0x0004;
 
-// Options for ball
-const ballOptions = {
-    restitution: 1, 
-    render: {
-        sprite: {
-            // texture: './assets/ghost-freepik.png',
-            xScale: 0.2,
-            yScale: 0.2
-        }
-    }
-}
+// Tracks if ghost has been hit (to analyze if ghost has been toppled)
+let analyzingHit = false;
 
 // Toggles mouse control ON/OFF
 const activateMouse = (status) => {
@@ -110,15 +101,17 @@ const finalizeScores = (timeRem) => {
 
     const baseScore = timeRem * scoreBasis;
 
-    const ghostScore = bodies.ghost
-        .map((type) => type.points)
-        .reduce((prevVal, currVal) => prevVal + currVal, 0); // creates an array of all ghost names to match
+    // const ghostScore = bodies.ghost
+    //     .map((type) => type.points)
+    //     .reduce((prevVal, currVal) => prevVal + currVal, 0); // creates an array of all ghost names to match
 
     const levelScore = perLevelBonus * (saveData.currLevel + 1);
     const livesLeftScore = livesLeftBonus * saveData.livesLeft;    
-    const score = baseScore + ghostScore + levelScore + livesLeftScore + saveData.currScore;
+    // const score = baseScore + ghostScore + levelScore + livesLeftScore + saveData.currScore;
+    const score = baseScore + levelScore + livesLeftScore + saveData.currScore;
 
-    console.log("Points awarded: ", {baseScore}, {ghostScore}, {levelScore}, {livesLeftScore});
+    // console.log("Points awarded: ", {baseScore}, {ghostScore}, {levelScore}, {livesLeftScore});
+    console.log("Points awarded: ", {baseScore}, {levelScore}, {livesLeftScore});
     console.log("Your final score is: ", score);
 
     // Save score to saveData file
@@ -241,13 +234,24 @@ const invokeGameWon = () => {
     console.log('current level: ', saveData.currLevel);
 }
 
-// Awards the player for hitting the ghost
-const awardGhostTaps = (currGhost) => {
-    console.log("tapped");
-    console.log(currGhost);
-
-    saveData.currScore += currGhost.tapPoints;
+// Awards the player for knocking the ghost over
+const awardGhostHit = (ghostArr, index) => {
+    // ghostArr[index].defeated=true;
+    console.log("Ghost down!");
+    saveData.currScore += ghostArr[index].points;
     showScores(saveData.currScore);
+    startBtn.innerHTML = `ghost ${index}`;
+}
+
+
+// Awards the player for tapping the ghost
+const awardGhostTaps = (currGhost) => {
+    // console.log("ghost tapped");
+    // console.log(currGhost);
+    // console.log(currGhost.tapPoints)
+
+    // saveData.currScore += currGhost.tapPoints;
+    // showScores(saveData.currScore);
 }
 
 // Detect scoring
@@ -258,7 +262,7 @@ const scoreDetector = (ghostArr) => {
     // for each ghostObj in ghostArr, do the following:
 
     if (controls.startState) {
-        ghostArr?.forEach((ghost) => {
+        ghostArr?.forEach((ghost, index) => {
             const {velocity, angle, position} = ghost;
     
             // const notMoving = (velocity.x === 0 && velocity.y === 0);
@@ -268,14 +272,23 @@ const scoreDetector = (ghostArr) => {
             // if ((notMoving && angle > 0.1) || isOffCanvas && angle > 0.1) {
     
             // Version 2= If ghost has toppled over clockwise or counterclockwise:
-            if (angle < -1.6 || angle > 1.2) {
-                console.log("Ghost down!");
+            // if ((angle < -1.6 || angle > 1.1) && !ghost.defeated) {
+            if ((angle < -1.4 || angle > 1) && !ghost.defeated) {
                 ghost.defeated = true;
+                // ghostArr[index].defeated=true;
+                awardGhostHit(ghostArr, index);
+                // console.log(ghostArr[index]);
+                console.log("Ghost down!");
+                // saveData.currScore += ghost.points;
+                // showScores(saveData.currScore);
+                // ghost.defeated=true;
             } 
             else {
                 // ghost was hit but not knocked down
                 awardGhostTaps(ghost);
             }
+
+            analyzingHit = false;
         });
     
         // If there are as many (ghost.defeated flag = true) entires in ghostArr as the length of the ghostArr, invokeGameWon():   
@@ -300,37 +313,40 @@ const activateEngineListeners = (status) => {
            
             pairs?.forEach(pair => {
                 // pair.bodyB.label === 'ghost' 
-                console.log(pair);
-                if ((pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') && controls.startState) {
+                // console.log(pair);
+                if ((pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') && controls.startState && !analyzingHit) {
                     console.log('ghost was hit')
-                    console.log(bodies.ghost);
-                    saveData.ghostHits++;
-                    console.log(saveData.ghostHits);
-                    // World.remove(engine.world, bodies.ghost);
+                    analyzingHit = true
 
-                    scoreDetector(bodies.ghost);
-    
+                    // TODO: add these two back later
+                    saveData.ghostHits++;
+                    // scoreDetector(bodies.ghost);
                 }
             })
-    
         })
     
         Events.on(engine, 'afterUpdate', () => {
+
+            // If analyzingHit flag is true and at least one of the ghosts in the game has a x or y velocity component of approximately 0:
+            if (analyzingHit 
+                && bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < 0.005)){  // check also for: OR ghost is off the map
+                console.log("detecting!");
+                scoreDetector(bodies.ghost);
+            }
+
              if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
                 
                 bodies.ball.collisionFilter.category = solid;
                 bodies.ball.collisionFilter.mask = solid;
-    
+                
                 bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
-    
+
                 World.add(engine.world, bodies.ball); // 'launches' the ball
                 bodies.sling.bodyB = bodies.ball;
                 controls.firing = false;
     
                 console.log(controls.firing);
             }  
-    
-            // scoreDetector(bodies.ghost);
     
         });
     } else {
@@ -375,6 +391,25 @@ const createSling = (levelParam) => {
 
     // Bodies and body-supporting functions
     bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+    // bodies.ball = Composite.create(new BallObj(slingProps.x, slingProps.y, ballProps.radius, ballOptions, sensorOptions));
+
+    // Composite ball
+    // bodies.ball = Composite.create({ label: 'Ball' });
+    // const body = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
+
+    // const bodySensor = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, sensorOptions);
+
+    // this.ballCenter = Matter.Constraint.create({
+    //     bodyB: this.body,
+    //     pointB: { x: xCoor, y: yCoor },
+    //     bodyA: this.bodySensor,
+    //     stiffness: 1,
+    //     length: 0
+    // })
+
+    // Composite.addBody(bodies.ball, body);
+    // Composite.addBody(bodies.ball, bodySensor);
+    // End of composite ball
 
     console.log("ball created");
     console.log(bodies.ball);

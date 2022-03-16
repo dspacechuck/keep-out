@@ -22,6 +22,30 @@ export const groundOptions = {
     isStatic: true
 }
 
+export const ballOptions = {
+    restitution: 1, 
+    render: {
+        sprite: {
+            // texture: './assets/ghost-freepik.png',
+            xScale: 0.2,
+            yScale: 0.2
+        }
+    },
+    // isSensor: true
+}
+
+export const sensorOptions = {
+    restitution: 1, 
+    render: {
+        sprite: {
+            // texture: './assets/ghost-freepik.png',
+            xScale: 0.2,
+            yScale: 0.2
+        }
+    },
+    isSensor: true
+}
+
 // contains detials on scoreing
 // "Tap" is a ghost hit
 // "Score" is if a ghost is knocked down
@@ -98,10 +122,10 @@ export const levels = [
                 y: 100
                 // y: 600
             },
-            {
-                x: 200,
-                y: 300
-            }
+            // {
+            //     x: 200,
+            //     y: 300
+            // }
         ],
         // mid: [
         //     {
@@ -161,16 +185,22 @@ export const levels = [
 {
     level: 2,
     ghost: {
+        easy: [
+            {
+                x: 800,
+                y: 100
+            }
+        ],
         mid: [
             {
                 x: 250,
-                y: 600
+                y: 100
             }
         ],
     },
     slingProps: {
-        x: 300,
-        y: 500,
+        x: 500,
+        y: 700,
         k: 0.1
     },
     ball: {
@@ -181,7 +211,7 @@ export const levels = [
     platforms: [
         {
             x: 250,
-            y: 300,
+            y: 500,
             width: 150,
             height: 20,
             restitution: 0.5,
@@ -333,7 +363,7 @@ export const ghostLevels = [
 export const saveData = {
     playerName: '',
     date: 0,
-    currLevel: 0,
+    currLevel: 1,
     bumpLevel: function() {this.currLevel ++},
     // bumpLevel: function() {this.currentLevel = true}, 
     timeLeftAtEnd: 0, 
