@@ -86,7 +86,6 @@ const showScores = (currScore) => {
     // TODO: Use gsap to animate score count up to awarded score
     saveData.currScore = currScore;
     scoreEl.innerHTML = currScore;
-
 }
 
 // Calculate Scores at game end
@@ -245,14 +244,14 @@ const awardGhostHit = (ghostArr, index) => {
 
 
 // Awards the player for tapping the ghost
-const awardGhostTaps = (currGhost) => {
-    // console.log("ghost tapped");
-    // console.log(currGhost);
-    // console.log(currGhost.tapPoints)
+// const awardGhostTaps = (currGhost) => {
+//     // console.log("ghost tapped");
+//     // console.log(currGhost);
+//     // console.log(currGhost.tapPoints)
 
-    // saveData.currScore += currGhost.tapPoints;
-    // showScores(saveData.currScore);
-}
+//     // saveData.currScore += currGhost.tapPoints;
+//     // showScores(saveData.currScore);
+// }
 
 // Detect scoring
 // param: ghostObj destructured into velocity, angle, and position
@@ -273,32 +272,145 @@ const scoreDetector = (ghostArr) => {
     
             // Version 2= If ghost has toppled over clockwise or counterclockwise:
             // if ((angle < -1.6 || angle > 1.1) && !ghost.defeated) {
-            if ((angle < -1.4 || angle > 1) && !ghost.defeated) {
-                ghost.defeated = true;
+            if ((angle < -1.4 || angle > 1) && !ghost.bonusCounted) {
+                
+                saveData.currScore += ghost.points;
+                ghost.bonusCounted = true;
+                console.log('bonus awarded: ', ghost.points);
+                showScores(saveData.currScore);
+
                 // ghostArr[index].defeated=true;
-                awardGhostHit(ghostArr, index);
+
+                // awardGhostHit(ghostArr, index);
+
                 // console.log(ghostArr[index]);
-                console.log("Ghost down!");
+                // console.log("Ghost down!");
                 // saveData.currScore += ghost.points;
                 // showScores(saveData.currScore);
                 // ghost.defeated=true;
             } 
-            else {
-                // ghost was hit but not knocked down
-                awardGhostTaps(ghost);
-            }
-
-            analyzingHit = false;
+  
         });
     
-        // If there are as many (ghost.defeated flag = true) entires in ghostArr as the length of the ghostArr, invokeGameWon():   
-        if  (ghostArr.every((ghost) => ghost.defeated)) {
-            console.log("You won!");
-            invokeGameWon();
-        }
+        // // If there are as many (ghost.defeated flag = true) entires in ghostArr as the length of the ghostArr, invokeGameWon():   
+        // if  (ghostArr.every((ghost) => ghost.defeated)) {
+        //     console.log("You won!");
+        //     invokeGameWon();
+        // }
     }
 
 }
+
+// Checks status of ghost(s)
+const checkghostStatus = () => {
+    // Version 2
+    // Gets stationary ghosts and check their angles
+    // Arr of all stationary ghosts:
+
+
+    // bodies.ghost.filter((eachGhost) => !eachGhost.defeated)
+    // .filter((ghost) => { return ghost.velocity.x < Math.abs(1e-12) || ghost.velocity.y < Math.abs(1e-12) })
+    //     .forEach((g, index) => {
+    //         if ((g.angle < -1.4 || g.angle > 1)) {
+    //             g.defeated = true;
+    //             awardGhostHit(bodies.ghost, index);
+    //             console.log(`Ghost ${index} defeated`);
+    //         }
+    //     })
+
+    // Find all non-defeated ghost that have stopped moving and see if they toppled over
+
+    // Helper function - converts rads to degrees
+    const radsToDegs = (rads) => {  
+        return rads * (180/Math.PI);
+    }
+
+    // Checks if ghost has toppled
+    const isGhostToppled = (rads) => {
+        // If ghost angle is <-80degs or> 57 degs, it is toppled (due to asymmetrial ghost body shape)
+
+        const degs = radsToDegs(rads);
+
+        if (degs < -80 || degs > 57) {
+            return true;
+        } else {
+            return false;
+        }
+
+        // (degs < -80 || degs > 57) ? true : false
+
+    }
+
+    // Checks if ghost is upright (i.e.: after collisions)
+    const isUpright = (rads) => {
+        const degs = radsToDegs(rads);
+
+        // ghost is upright if the ghost's current angle is within -/+15 degrees
+        let stableGhost = (degs%360) < 15;
+        
+        // If ghost has not experienced a full 360 rotation:
+        if (rads < (360 * (Math.PI/180))) {
+            return !isGhostToppled(rads);
+        } else {
+            return stableGhost;
+        }
+    }
+
+
+    bodies.ghost.filter((eachGhost) => !eachGhost.defeated)
+    // .filter((ghost) => { return (ghost.velocity.x < Math.abs(1e-12) || ghost.velocity.y < Math.abs(1e-12)) && (ghost.angle <-1.4 || ghost.angle > 1) })
+    .filter((ghost) => { return (ghost.velocity.x < Math.abs(1e-12) || ghost.velocity.y < Math.abs(1e-12)) && isGhostToppled(ghost.angle) && !isUpright(ghost.angle) })
+        .forEach((g, index) => {
+                g.defeated = true;
+                awardGhostHit(bodies.ghost, index);
+                console.log(`Ghost ${index} defeated`);
+            })
+        
+
+}
+
+// Monitors for toppled over ghosts (ghosts can topple over from residual effects from previous interactions with the world)
+const activateScoreListener = (status = true) => {
+    const scoreListener = setInterval(checkghostStatus, 200);
+    if (!status) {
+        clearInterval(scoreListener);
+    }
+}
+
+// Award points for any ghosts that were hit
+const awardGhostTaps = () => {
+    //   if (analyzingHit 
+    //             && bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < Math.abs(1e-12))){  // check also for: OR ghost is off the map
+    //             console.log("detecting!");
+    //             scoreDetector(bodies.ghost);
+    //         }
+
+    // bodies.ghost.map((ghost) => {
+
+
+    // })
+
+    
+    bodies.ghost.forEach((ghost) => {
+        if (ghost.defeated && !ghost.scoreCounted) {
+            saveData.currScore += ghost.tapPoints;
+            showScores(saveData.currScore);
+            ghost.scoreCounted = true;
+        } 
+    })
+
+    console.log("Current score: ", saveData.currScore);
+
+}
+
+// Checks for game won
+const checkGameWon = () => { 
+    if  (bodies.ghost.every((ghost) => ghost.defeated)) {
+        console.log("You won!");
+        invokeGameWon();
+    }
+}
+
 
 // Turns ON/OFF matter.js listeners
 const activateEngineListeners = (status) => {
@@ -310,29 +422,92 @@ const activateEngineListeners = (status) => {
         Events.on(engine, 'collisionEnd', (e) => {
     
             const pairs = e.pairs;
-           
-            pairs?.forEach(pair => {
-                // pair.bodyB.label === 'ghost' 
-                // console.log(pair);
-                if ((pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') && controls.startState && !analyzingHit) {
-                    console.log('ghost was hit')
-                    analyzingHit = true
 
-                    // TODO: add these two back later
-                    saveData.ghostHits++;
-                    // scoreDetector(bodies.ghost);
+            // console.log('pairs :', pairs);
+    
+            // const ghostsHit = pairs?.filter((body) => body.label === 'ghost').forEach((ghost) => ghost.defeated = true);
+
+            // console.log(ghostsHit);
+
+            pairs?.forEach(pair => {
+  
+                if(pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost'){
+                    console.log(pair);
+                    console.log('ghost was hit!')
                 }
+
+                // Only if ghost is hit BY ball:
+                if ((pair.bodyA.label === 'ghost') && (pair.bodyB.label === 'ball')) {
+                    saveData.ghostHits++;
+                    saveData.currScore += pair.bodyA.tapPoints;
+                    console.log('Ghost Hits Total: ', saveData.ghostHits);
+                    showScores(saveData.currScore);
+                }
+
+                if ((pair.bodyB.label === 'ghost') && (pair.bodyA.label === 'ball')) {
+                    saveData.ghostHits++;
+                    saveData.currScore += pair.bodyB.tapPoints;
+                    console.log('Ghost Hits Total: ', saveData.ghostHits);
+                    showScores(saveData.currScore);
+                }              
+
+                // Award tap points
+                // Check if ghost has toppled over
+
+                //     // awardGhostHit(ghostArr, index);
+
+                //     // TODO: add these two back later
+                //     saveData.ghostHits++;
+                    // scoreDetector(bodies.ghost);
+                // }
+
+                
+
             })
         })
     
         Events.on(engine, 'afterUpdate', () => {
 
+            // If any ghosts have been defeated, award points
+            // Also detect if ghosts have been toppled so that bonus points are awarded
+            // if (bodies.ghost?.filter((ghost) => ghost.defeated).length > 0){
+            //     awardGhostTaps();
+            //     scoreDetector(bodies.ghost);
+            //     checkGameWon();
+            // }
+
+
+
             // If analyzingHit flag is true and at least one of the ghosts in the game has a x or y velocity component of approximately 0:
-            if (analyzingHit 
-                && bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < 0.005)){  // check also for: OR ghost is off the map
-                console.log("detecting!");
-                scoreDetector(bodies.ghost);
-            }
+            // if (analyzingHit 
+            //     && bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < Math.abs(1e-12))){  // check also for: OR ghost is off the map
+            //     console.log("detecting!");
+            //     scoreDetector(bodies.ghost);
+            // }
+
+            // scoreDetector(bodies.ghost);
+
+            // if ((bodies.ghost[0]?.angle < -1.4 || bodies.ghost[0].angle > 1) && !bodies.ghost[0].defeated) {
+            //     bodies.ghost[0].defeated = true;
+            //     console.log('ghost 1 banished');
+            // }
+
+
+            // if ((bodies?.ghost[1]?.angle < -1.4 || bodies.ghost[0].angle > 1) && !bodies.ghost[1].defeated) {
+            //     bodies.ghost[1].defeated = true;
+            //     console.log('ghost 2 banished');
+            // }
+
+            // if (bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < Math.abs(1e-13))){  // check also for: OR ghost is off the map
+                // if(bodies.ghost?.forEach(ghost => ghost.angle < -1.4 || ghost.angle > 1)){
+                //     console.log("detecting!");
+                //     console.log("banished");
+                // }
+                
+
+              
+            //     // scoreDetector(bodies.ghost);
+            // }
 
              if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
                 
@@ -659,6 +834,7 @@ $(document).ready(() => {
     console.log('game is loaded!');
     activateStartBtn(true);
     addElements(currLevelObj);
+    activateScoreListener(); // checks if ghosts have toppled over (from ball hit, gravity, or residual changes to environment)
     loadLevelTimer();
 
     console.log(engine.gravity.y) 
@@ -679,6 +855,8 @@ $(document).ready(() => {
     // button to debug game
     testBtn.addEventListener('click', () => {
         console.log(bodies.ghost);
+        console.log(!!bodies.ghost?.filter((ghost) => ghost.defeated));
+        checkghostStatus()
     //    Body.applyForce(bodies.ghost[0], {x: bodies.ghost[0].position.x, y: bodies.ghost[0].position.y}, {x: 0, y: -0.15});
         // scoreDetector(bodies.ghost);
     });

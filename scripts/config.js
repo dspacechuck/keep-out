@@ -31,6 +31,7 @@ export const ballOptions = {
             yScale: 0.2
         }
     },
+    label: 'ball'
     // isSensor: true
 }
 
