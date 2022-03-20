@@ -364,7 +364,7 @@ export const ghostLevels = [
 export const saveData = {
     playerName: '',
     date: 0,
-    currLevel: 1,
+    currLevel: 0,
     bumpLevel: function() {this.currLevel ++},
     // bumpLevel: function() {this.currentLevel = true}, 
     timeLeftAtEnd: 0, 

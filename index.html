@@ -1,6 +1,5 @@
 <!-- Keep Out - Protect the Halloween Kitty! -->
-<!-- Concept, design, and code © Charles Wong 2021  -->
-<!-- Created at Juno College -->
+<!-- Concept, design, and code © Charles Wong 2022  -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -33,6 +32,27 @@
 
 <body>
     <main class="wrapper altProps">
+
+        <section class="modalContainer">
+            <div class="modal">
+                <div class="introContent">
+                    <div class="introContentInnerWrapper">
+                        <h2>KEEP OUT</h2>
+                        <h3>© Charles Wong, 2022</h3>
+                        <ul>
+                            <li id="startGame">
+                                <button class="startGameBtn">START GAME</button>
+                            </li>
+                            <li id="instructions">
+                                <button class="instructionsBtn">INSTRUCTIONS</button>
+                            </li>
+                        </ul>
+                        <h4 class="loadingMsg">LOADING...</h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="game">
             <!-- Game map structure layout -->
             <!-- <div class="ring3 outer"> -->
@@ -64,7 +84,7 @@
             </div>
             <!-- Game stats go here -->
             <div class="infoWrap">
-                <h1>KEEP OUT</h1>
+                <h2>KEEP OUT</h2>
                 <div class="stats">
                     <div class="scoreDiv">
                         <span>Score:</span>

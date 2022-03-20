@@ -41,11 +41,16 @@ body {
   height: 900px;
 }
 
-/* Container for game */
-.game {
+/* .game and .modal common styling */
+.game, 
+.modalContainer {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* Container for game */
+.game {
   background: rgb(102, 51, 153);
   /* padding: 20px; */
   /* flex: 0 0 75%; */
@@ -54,6 +59,96 @@ body {
   /* Temporarily added this radius for UI coherency during user testing */
   border-bottom-left-radius: 10px;
   /* border: 5px solid red; */
+  width: 900px;
+  height: 900px;
+}
+
+
+/* Game status modal */
+.modalContainer {
+  /* display: none; */
+  position: absolute;
+  margin: 0 auto;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  /* background: grey; */
+  background:rgba(171, 72, 180, 0.541);
+  left: 0;
+  top: 0;
+}
+
+.modal {
+  width: 1200px;
+  height: 900px;
+  background: rgba(128, 128, 128, 0.418);
+  /* background-color: grey; */
+  border-radius: 10px;
+  display: flex;
+}
+.modal ul {
+  /* text-decoration: none; */
+  list-style-type: none;
+}
+
+.introContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 1200px;
+  height: 900px;
+  /* border: 3px solid red; */
+  background: darkslateblue;
+  border-radius: 10px;
+}
+
+.introContentInnerWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* color: white; */
+  /* border: 1px solid white; */
+  margin: 0;
+  padding: 0;
+  /* color: blueviolet; */
+  color: palevioletred;
+  font-family: monospace;
+  font-size: 1.4rem;
+  font-weight: bold;
+
+  /* width: 100%;
+  height: 100% */
+
+}
+
+.introContent h2 {
+  font-family: "Monofett", cursive;
+  font-size: 4.5rem;
+  text-align: center;
+  /* color: blueviolet; */
+}
+
+.introContent h3 {
+  font-size: 1.4rem;
+}
+
+.introContent ul {
+  padding-top: 30px;
+}
+
+.introContent li {
+  padding: 10px 0;
+  text-align: center;
+}
+
+.introContent button {
+  padding: 5px 10px;
+  min-width: 200px;
+  font-size: 1rem;
+  color: white;
+  background: none;
 }
 
 /* Hides ghost from rendering unless rendered by Matter.js */
@@ -191,7 +286,7 @@ svg {
 }
 
 /* h1 (title formatting) */
-h1 {
+h1, h2 {
   margin: 0;
   padding: 0;
   font-family: "Monofett", cursive;

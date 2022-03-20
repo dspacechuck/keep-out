@@ -33,6 +33,9 @@ const startBtn = document.querySelector('.startBtn');
 const timerBar = document.querySelector('.timerDiv');
 const currTimeEl = document.querySelector('.myTime');
 const scoreEl = document.querySelector('.myScore');
+const startGameBtn = document.querySelector('.startGameBtn');
+const instructionsBtn = document.querySelector('.instructionsBtn');
+const modalContainer = document.querySelector('.modalContainer');
 
 // Define controls
 const controls = {
@@ -186,12 +189,15 @@ const startBtnOps = () => {
 // Add/remove start button event listener
 // onClick => change button text to "pause" and start game
 const activateStartBtn = (listenerOn) => {
-    if(listenerOn) {
-        startBtn.addEventListener('click', startBtnOps);
-    } else {
-        startBtn.removeEventListener('click', startBtnOps);
-    }
-
+    return new Promise((resolve, reject) => {
+        if(listenerOn) {
+            startBtn.addEventListener('click', startBtnOps);
+            resolve();
+        } else {
+            startBtn.removeEventListener('click', startBtnOps);
+            resolve();
+        }
+    })
 }
 
 
@@ -265,21 +271,7 @@ const awardGhostHit = (id) => {
     if (checkGameWon()) {
         showResultsModal();
     }
-    // console.log("Ghost down!");
-    // saveData.currScore += ghostArr[index].points;
-    // showScores(saveData.currScore);
-    // startBtn.innerHTML = `ghost ${index}`;
 }
-
-// Awards the player for tapping the ghost
-// const awardGhostTaps = (currGhost) => {
-//     // console.log("ghost tapped");
-//     // console.log(currGhost);
-//     // console.log(currGhost.tapPoints)
-
-//     // saveData.currScore += currGhost.tapPoints;
-//     // showScores(saveData.currScore);
-// }
 
 // Detect scoring
 // param: ghostObj destructured into velocity, angle, and position
@@ -373,12 +365,11 @@ const checkghostStatus = () => {
     }
 
     bodies.ghost.filter((eachGhost) => !eachGhost.defeated)
-        ?.filter((ghost) => { return (isGhostStatic && isGhostToppled(ghost.angle) && !isUpright(ghost.angle) || isGhostOffScreen(ghost.position.x, ghost.position.y)) })
-            ?.forEach((g) => {
-                    g.defeated = true;
-                    awardGhostHit(g.id);
-                })
-
+    ?.filter((ghost) => { return (isGhostStatic && isGhostToppled(ghost.angle) && !isUpright(ghost.angle) || isGhostOffScreen(ghost.position.x, ghost.position.y)) })
+        ?.forEach((g) => {
+                g.defeated = true;
+                awardGhostHit(g.id);
+            })
     
 }
 
@@ -392,17 +383,6 @@ const activateScoreListener = (status = true) => {
 
 // Award points for any ghosts that were hit
 const awardGhostTaps = () => {
-    //   if (analyzingHit 
-    //             && bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < Math.abs(1e-12))){  // check also for: OR ghost is off the map
-    //             console.log("detecting!");
-    //             scoreDetector(bodies.ghost);
-    //         }
-
-    // bodies.ghost.map((ghost) => {
-
-
-    // })
-
     
     bodies.ghost.forEach((ghost) => {
         if (ghost.defeated && !ghost.scoreCounted) {
@@ -437,12 +417,6 @@ const activateEngineListeners = (status) => {
     
             const pairs = e.pairs;
 
-            // console.log('pairs :', pairs);
-    
-            // const ghostsHit = pairs?.filter((body) => body.label === 'ghost').forEach((ghost) => ghost.defeated = true);
-
-            // console.log(ghostsHit);
-
             pairs?.forEach(pair => {
   
                 if(pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost'){
@@ -465,9 +439,6 @@ const activateEngineListeners = (status) => {
                 //     showScores(saveData.currScore);
                 // }              
 
-
-
-
                 // Award tap points
                 // Check if ghost has toppled over
 
@@ -477,8 +448,6 @@ const activateEngineListeners = (status) => {
                 //     saveData.ghostHits++;
                     // scoreDetector(bodies.ghost);
                 // }
-
-                
 
             })
         })
@@ -492,7 +461,6 @@ const activateEngineListeners = (status) => {
             //     scoreDetector(bodies.ghost);
             //     checkGameWon();
             // }
-
 
 
             // If analyzingHit flag is true and at least one of the ghosts in the game has a x or y velocity component of approximately 0:
@@ -583,25 +551,6 @@ const createSling = (levelParam) => {
 
     // Bodies and body-supporting functions
     bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
-    // bodies.ball = Composite.create(new BallObj(slingProps.x, slingProps.y, ballProps.radius, ballOptions, sensorOptions));
-
-    // Composite ball
-    // bodies.ball = Composite.create({ label: 'Ball' });
-    // const body = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
-
-    // const bodySensor = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, sensorOptions);
-
-    // this.ballCenter = Matter.Constraint.create({
-    //     bodyB: this.body,
-    //     pointB: { x: xCoor, y: yCoor },
-    //     bodyA: this.bodySensor,
-    //     stiffness: 1,
-    //     length: 0
-    // })
-
-    // Composite.addBody(bodies.ball, body);
-    // Composite.addBody(bodies.ball, bodySensor);
-    // End of composite ball
 
     console.log("ball created");
     console.log(bodies.ball);
@@ -810,18 +759,11 @@ const addElements = (levelParam) => {
 
     }
 
-
     //
-
     addPlatforms(levelParam);
-
-    // console.log(bodies.ghost);
-
-    // console.log(loadSvg('./assets/ghost-freepik-inkscape-svg.svg'));
  
     // Add items to world
     World.add(engine.world, [...bodies.groundPlane]);
-
 
 }
 
@@ -836,35 +778,44 @@ const runEngine = () => {
     Render.run(render);
 }
 
-console.log("level 1");
-console.log(levels[0]);
-
-// params: x, y, radius, restitution, inertia
-// createSling(levels[0]);
-// addElements(levels[0]);
-// addDetector();
-
 // add all objects to the world
 runEngine();
 
-$(document).ready(() => {
+// Activates the main menu buttons
+const activateIntroBtns = (status) => {
+    if (status) {
+        startGameBtn.addEventListener('click', () => {
+            console.log("Let's start the game!");
+            console.log(modalContainer)
+            modalContainer.style="display: none";
+        });
+        instructionsBtn.addEventListener('click', () => {
+            console.log("1) Click and drag the ball back, 2) Aim the ball, 3) Release the mouse to laynch the ball. ***Knock over all ghosts before the timer runs out***");
+        });
+    }
+}
+
+$(document).ready(async () => {
+    activateIntroBtns(true);
     console.log('game is loaded!');
-    activateStartBtn(true);
-    addElements(currLevelObj);
-    activateScoreListener(); // checks if ghosts have toppled over (from ball hit, gravity, or residual changes to environment)
-    loadLevelTimer();
+    await activateStartBtn(true);
+    await addElements(currLevelObj);
+    await activateScoreListener(); // checks if ghosts have toppled over (from ball hit, gravity, or residual changes to environment)
+    await loadLevelTimer();
 
     console.log(engine.gravity.y) 
     // engine.gravity.y = 0.2;
 
-    // Have a splash screen (arcade game style screen)
-    // 1) Await Start button click 
-    // 2) Show instructions + animate slingshot movement
-    // 3) Await user click of OK to dismiss splash screen
-    // 4) Show 3, 2, 1 countdown 
-    // 5) run game
+    // Psuedocode
+    // 1) Display arcade style start screen
+    // 2) Show Loading status
+    // 3) When loading is done, display Start Game and Instructions buttons 
+    // 4) On Start Button Click, display 3, 2, 1 countdown and then begin game
+    // 5) Run game
         // 5.1 (start countdown clock) 
        // 5.2 (i.e.: animate any objects as necessary)
+    // 6) When timer runs out or when game is won, display modal to either restart or advance to next level
+    // 7) Repeat above from step 2)
 
 
     // DEBUG Code only   
