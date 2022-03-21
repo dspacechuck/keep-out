@@ -120,7 +120,7 @@ export const levels = [
         easy: [
             {
                 x: 650,
-                y: 100
+                y: 150
                 // y: 600
             },
             // {

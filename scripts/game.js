@@ -189,15 +189,11 @@ const startBtnOps = () => {
 // Add/remove start button event listener
 // onClick => change button text to "pause" and start game
 const activateStartBtn = (listenerOn) => {
-    return new Promise((resolve, reject) => {
         if(listenerOn) {
             startBtn.addEventListener('click', startBtnOps);
-            resolve();
         } else {
             startBtn.removeEventListener('click', startBtnOps);
-            resolve();
         }
-    })
 }
 
 
@@ -636,134 +632,142 @@ const animateObjs = (levelParam) => {
 
 
 // Function to add elements to the world
-const addElements = (levelParam) => {
-    // let { 
-    //     mouse, 
-    //     mouseConstraint, 
-    //     firing 
-    // } = controls;
+const addElements = async (levelParam) => {
 
-    // let {
-    //     sling,
-    //     ball,
-    //     groundPlane,
-    //     platforms,
-    //     ghost
-    // } = bodies;
-    const groundPlanes = levelParam.groundPlanes;
-    const currLvlGhosts = levelParam.ghost;
+    const addElPromise = new Promise((res, rej) => {
+            // let { 
+        //     mouse, 
+        //     mouseConstraint, 
+        //     firing 
+        // } = controls;
 
-
-    createSling(levelParam);
-
-    console.log("addElements levelParam: ", levelParam);
-    
-    groundPlanes.forEach((ground, i) => {
-        bodies.groundPlane[i] = Bodies.rectangle(ground.x, ground.y, ground.width, ground.height, ground.options);
-        console.log(bodies.groundPlane[i]);
-    });
+        // let {
+        //     sling,
+        //     ball,
+        //     groundPlane,
+        //     platforms,
+        //     ghost
+        // } = bodies;
+        const groundPlanes = levelParam.groundPlanes;
+        const currLvlGhosts = levelParam.ghost;
 
 
+        createSling(levelParam);
 
-    // Bodies and body-supporting functions
-    // bodies.groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
-    
-    // load a svg file and parse it with image/svg+xml params
-    const loadSvg = (filePath) => {
-        return fetch(filePath)
-            .then((res) => { return res.text(); })
-            .then((raw) => { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
-    };
-
-    // 
-    var select = function(root, selector) {
-        console.log(Array.prototype.slice.call(root.querySelectorAll(selector)))
-        return Array.prototype.slice.call(root.querySelectorAll(selector));
-    };
-
-    // This function can be used to load any SVG into an object in the game
-    const addGhost = (ghostNum, ghostName, ghostTapPoints, ghostPoints, pngPath, svgPath, x, y) => {
-        ([
-            // './assets/ghost-freepik-inkscape-svg.svg', 
-            svgPath
-        ]).forEach(function(path, i) { 
-            console.log("Path and i below");
-            console.log(path);
-            console.log(i);
-           
-            loadSvg(path).then(function(root) {
-     
-                const vertexSets = select(root, 'path')
-                    .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
-    
-                bodies.ghost[ghostNum] = Bodies.fromVertices(i + x, i + y, vertexSets, {
-                // bodies.ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
-                    label: 'ghost',
-                    render: {
-                        fillStyle: 'yellow',
-                        strokeStyle: '#f19648',
-                        lineWidth: 1,
-                        sprite: {
-                            texture: pngPath,
-                            xScale: 0.15,
-                            yScale: 0.15
-                        }
-                    }
-                }, true);
-
-                bodies.ghost[ghostNum].name = ghostName;
-                bodies.ghost[ghostNum].points = ghostPoints;
-                bodies.ghost[ghostNum].tapPoints = ghostTapPoints
-    
-                World.add(engine.world, [bodies.ghost[ghostNum]]);
-
-                bodies.ghost[ghostNum].collisionFilter = { category: solid, mask: solid };
-
-                console.log(bodies.ghost[ghostNum]);
-            });
+        console.log("addElements levelParam: ", levelParam);
+        
+        groundPlanes.forEach((ground, i) => {
+            bodies.groundPlane[i] = Bodies.rectangle(ground.x, ground.y, ground.width, ground.height, ground.options);
+            console.log(bodies.groundPlane[i]);
         });
-    }
-    
-    // In currLevelsObj.ghost, if any item is not an empty array:
-    // Find the name of this item in the ghostTypes array
-    // If there is a match, point the current ghost path to this path
-    // invoke addGhost for as many entires of ghosts there are in currLevelsObj.ghost.easy/mid/hard
-    // Keep doing this until all entires of easy, mid, and hard are iterated through and added to the map
 
 
-    let currGhostCount = 0;
 
-    // Function to iterate through the ghost property of the currLevelsObj and to load each and every ghost
-    for (const eachGhostType in currLevelObj.ghost) {
+        // Bodies and body-supporting functions
+        // bodies.groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
+        
+        // load a svg file and parse it with image/svg+xml params
+        const loadSvg = (filePath) => {
+            return fetch(filePath)
+                .then((res) => { return res.text(); })
+                .then((raw) => { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
+        };
 
-        // If current ghost type is specified fo the current level:
-        if (eachGhostType) {
-            // Find the correct item within ghostType which matches this name
-            const currGhostType = ghostTypes.find((type) => type.difficulty === eachGhostType)
-    
-            console.log(eachGhostType);
-            console.log(currLevelObj.ghost[eachGhostType])
-    
-            // create a unique ghost name
-            const ghostName = currGhostType.name + currGhostCount;
+        // 
+        var select = function(root, selector) {
+            console.log(Array.prototype.slice.call(root.querySelectorAll(selector)))
+            return Array.prototype.slice.call(root.querySelectorAll(selector));
+        };
+
+        // This function can be used to load any SVG into an object in the game
+        const addGhost = (ghostNum, ghostName, ghostTapPoints, ghostPoints, pngPath, svgPath, x, y) => {
+            ([
+                // './assets/ghost-freepik-inkscape-svg.svg', 
+                svgPath
+            ]).forEach(function(path, i) { 
+                console.log("Path and i below");
+                console.log(path);
+                console.log(i);
             
-            const ghostTapPoints = currGhostType.perTapPoints;
-            const ghostPoints = currGhostType.points;
-    
-            // Iterate through the current level object and add all ghosts specified
-            currLevelObj.ghost[eachGhostType]?.forEach(ghost => {
-                addGhost(currGhostCount, ghostName, ghostTapPoints, ghostPoints, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
-                currGhostCount ++;
-            })
+                loadSvg(path).then(function(root) {
+        
+                    const vertexSets = select(root, 'path')
+                        .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
+        
+                    bodies.ghost[ghostNum] = Bodies.fromVertices(i + x, i + y, vertexSets, {
+                    // bodies.ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
+                        label: 'ghost',
+                        render: {
+                            fillStyle: 'yellow',
+                            strokeStyle: '#f19648',
+                            lineWidth: 1,
+                            sprite: {
+                                texture: pngPath,
+                                xScale: 0.15,
+                                yScale: 0.15
+                            }
+                        }
+                    }, true);
+
+                    bodies.ghost[ghostNum].name = ghostName;
+                    bodies.ghost[ghostNum].points = ghostPoints;
+                    bodies.ghost[ghostNum].tapPoints = ghostTapPoints
+        
+                    World.add(engine.world, [bodies.ghost[ghostNum]]);
+
+                    bodies.ghost[ghostNum].collisionFilter = { category: solid, mask: solid };
+
+                    console.log(bodies.ghost[ghostNum]);
+                });
+            });
+        }
+        
+        // In currLevelsObj.ghost, if any item is not an empty array:
+        // Find the name of this item in the ghostTypes array
+        // If there is a match, point the current ghost path to this path
+        // invoke addGhost for as many entires of ghosts there are in currLevelsObj.ghost.easy/mid/hard
+        // Keep doing this until all entires of easy, mid, and hard are iterated through and added to the map
+
+
+        let currGhostCount = 0;
+
+        // Function to iterate through the ghost property of the currLevelsObj and to load each and every ghost
+        for (const eachGhostType in currLevelObj.ghost) {
+
+            // If current ghost type is specified fo the current level:
+            if (eachGhostType) {
+                // Find the correct item within ghostType which matches this name
+                const currGhostType = ghostTypes.find((type) => type.difficulty === eachGhostType)
+        
+                console.log(eachGhostType);
+                console.log(currLevelObj.ghost[eachGhostType])
+        
+                // create a unique ghost name
+                const ghostName = currGhostType.name + currGhostCount;
+                
+                const ghostTapPoints = currGhostType.perTapPoints;
+                const ghostPoints = currGhostType.points;
+        
+                // Iterate through the current level object and add all ghosts specified
+                currLevelObj.ghost[eachGhostType]?.forEach(ghost => {
+                    addGhost(currGhostCount, ghostName, ghostTapPoints, ghostPoints, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
+                    currGhostCount ++;
+                })
+            }
+
         }
 
-    }
+        //
+        addPlatforms(levelParam);
 
-    //
-    addPlatforms(levelParam);
- 
-    // Add items to world
-    World.add(engine.world, [...bodies.groundPlane]);
+        // Add items to world
+        res(World.add(engine.world, [...bodies.groundPlane]));
+        
+    })    
+
+
+
+    
 
 }
 
@@ -798,10 +802,32 @@ const activateIntroBtns = (status) => {
 $(document).ready(async () => {
     activateIntroBtns(true);
     console.log('game is loaded!');
-    await activateStartBtn(true);
-    await addElements(currLevelObj);
-    await activateScoreListener(); // checks if ghosts have toppled over (from ball hit, gravity, or residual changes to environment)
-    await loadLevelTimer();
+    activateStartBtn(true);
+    const addedEl = addElements(currLevelObj)
+
+        // .then(activateScoreListener)
+        // .then(loadLevelTimer())
+    
+    Promise.resolve(addedEl)
+        .then(() => {
+            activateScoreListener();
+            loadLevelTimer();
+            // alert('everything loaded!');
+            }
+        )
+    
+    $.getScript("../lib/pathseg.js")
+    .done(function(script, textStatus) {
+        console.log(textStatus);
+    })
+    .fail(function(jqxhr, settings, exception) {
+        console.log("loading script failed.");
+    });
+
+        // .then(alert('ready!'));
+
+    // await activateScoreListener(); // checks if ghosts have toppled over (from ball hit, gravity, or residual changes to environment)
+    // await loadLevelTimer();
 
     console.log(engine.gravity.y) 
     // engine.gravity.y = 0.2;
