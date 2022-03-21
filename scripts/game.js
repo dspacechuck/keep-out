@@ -1,4 +1,4 @@
-import { canvasProps, startBtnProps, renderConfig, ballOptions, sensorOptions, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData, scoreData } from './config.js'; 
+import { canvasProps, startBtnProps, renderConfig, ballOptions, sensorOptions, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData, scoreData, ghostVertices } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
@@ -371,7 +371,7 @@ const checkghostStatus = () => {
 
 // Monitors for toppled over ghosts (ghosts can topple over from residual effects from previous interactions with the world)
 const activateScoreListener = (status = true) => {
-    const scoreListener = setInterval(checkghostStatus, 200);
+    const scoreListener = setInterval(checkghostStatus, 200); //polling rate = 200ms
     if (!status) {
         clearInterval(scoreListener);
     }
@@ -449,46 +449,6 @@ const activateEngineListeners = (status) => {
         })
     
         Events.on(engine, 'afterUpdate', () => {
-
-            // If any ghosts have been defeated, award points
-            // Also detect if ghosts have been toppled so that bonus points are awarded
-            // if (bodies.ghost?.filter((ghost) => ghost.defeated).length > 0){
-            //     awardGhostTaps();
-            //     scoreDetector(bodies.ghost);
-            //     checkGameWon();
-            // }
-
-
-            // If analyzingHit flag is true and at least one of the ghosts in the game has a x or y velocity component of approximately 0:
-            // if (analyzingHit 
-            //     && bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < Math.abs(1e-12))){  // check also for: OR ghost is off the map
-            //     console.log("detecting!");
-            //     scoreDetector(bodies.ghost);
-            // }
-
-            // scoreDetector(bodies.ghost);
-
-            // if ((bodies.ghost[0]?.angle < -1.4 || bodies.ghost[0].angle > 1) && !bodies.ghost[0].defeated) {
-            //     bodies.ghost[0].defeated = true;
-            //     console.log('ghost 1 banished');
-            // }
-
-
-            // if ((bodies?.ghost[1]?.angle < -1.4 || bodies.ghost[0].angle > 1) && !bodies.ghost[1].defeated) {
-            //     bodies.ghost[1].defeated = true;
-            //     console.log('ghost 2 banished');
-            // }
-
-            // if (bodies.ghost.flatMap((ghost) => [ghost.velocity.x, ghost.velocity.y]).every((velocity) => velocity < Math.abs(1e-13))){  // check also for: OR ghost is off the map
-                // if(bodies.ghost?.forEach(ghost => ghost.angle < -1.4 || ghost.angle > 1)){
-                //     console.log("detecting!");
-                //     console.log("banished");
-                // }
-                
-
-              
-            //     // scoreDetector(bodies.ghost);
-            // }
 
              if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
                 
@@ -681,20 +641,27 @@ const addElements = async (levelParam) => {
 
         // This function can be used to load any SVG into an object in the game
         const addGhost = (ghostNum, ghostName, ghostTapPoints, ghostPoints, pngPath, svgPath, x, y) => {
-            ([
-                // './assets/ghost-freepik-inkscape-svg.svg', 
-                svgPath
-            ]).forEach(function(path, i) { 
-                console.log("Path and i below");
-                console.log(path);
-                console.log(i);
+            // ([
+            //     // './assets/ghost-freepik-inkscape-svg.svg', 
+            //     svgPath
+            // ]).forEach(function(path, i) { 
+            //     console.log("Path and i below");
+            //     console.log(path);
+            //     console.log(i);
             
-                loadSvg(path).then(function(root) {
+            //     loadSvg(path).then(function(root) {
         
-                    const vertexSets = select(root, 'path')
-                        .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
+            //         const vertexSets = select(root, 'path')
+            //             .map(function(path) { return Matter.Vertices.scale(Svg.pathToVertices(path, 30), 0.15, 0.15); });
         
-                    bodies.ghost[ghostNum] = Bodies.fromVertices(i + x, i + y, vertexSets, {
+
+            //     //    const vertexSets = Matter.Vertices.scale(ghostVertices, 0.15, 0.15);
+                    
+                    
+            //         console.log('Vertex Sets');
+            //         console.log(vertexSets);
+
+                    bodies.ghost[ghostNum] = Bodies.fromVertices(x, y, ghostVertices, {
                     // bodies.ghost = Bodies.fromVertices(i + 650, i + 200, vertexSets, {
                         label: 'ghost',
                         render: {
@@ -717,9 +684,9 @@ const addElements = async (levelParam) => {
 
                     bodies.ghost[ghostNum].collisionFilter = { category: solid, mask: solid };
 
-                    console.log(bodies.ghost[ghostNum]);
-                });
-            });
+
+            //     });
+            // });
         }
         
         // In currLevelsObj.ghost, if any item is not an empty array:
@@ -734,7 +701,7 @@ const addElements = async (levelParam) => {
         // Function to iterate through the ghost property of the currLevelsObj and to load each and every ghost
         for (const eachGhostType in currLevelObj.ghost) {
 
-            // If current ghost type is specified fo the current level:
+            // If current ghost type is specified for the current level:
             if (eachGhostType) {
                 // Find the correct item within ghostType which matches this name
                 const currGhostType = ghostTypes.find((type) => type.difficulty === eachGhostType)
@@ -753,12 +720,14 @@ const addElements = async (levelParam) => {
                     addGhost(currGhostCount, ghostName, ghostTapPoints, ghostPoints, currGhostType.pngPath, currGhostType.svgPath, ghost.x, ghost.y);
                     currGhostCount ++;
                 })
+                console.log('ghosts added');
             }
 
         }
 
         //
         addPlatforms(levelParam);
+        console.log('adding platforms')
 
         // Add items to world
         res(World.add(engine.world, [...bodies.groundPlane]));
@@ -812,7 +781,7 @@ $(document).ready(async () => {
         .then(() => {
             activateScoreListener();
             loadLevelTimer();
-            // alert('everything loaded!');
+            console.log('everything loaded!');
             }
         )
     
@@ -823,11 +792,6 @@ $(document).ready(async () => {
     .fail(function(jqxhr, settings, exception) {
         console.log("loading script failed.");
     });
-
-        // .then(alert('ready!'));
-
-    // await activateScoreListener(); // checks if ghosts have toppled over (from ball hit, gravity, or residual changes to environment)
-    // await loadLevelTimer();
 
     console.log(engine.gravity.y) 
     // engine.gravity.y = 0.2;
