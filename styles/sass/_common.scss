@@ -1,0 +1,47 @@
+/* Body styling */
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 62.5%;
+    background: rgb(39, 15, 63);
+    /* Container for game and infoPanel */
+    .wrapper {
+        width: 1200px;
+        margin: 0 auto;
+        min-width: 1000px;
+    }
+}
+
+/* h1 (title formatting) */
+h1, h2 {
+    margin: 0;
+    padding: 0;
+    font-family: "Monofett", cursive;
+    font-size: 4.5rem;
+    text-align: center;
+    color: blueviolet;
+}
+
+/* Footer properties */
+footer {
+    text-align: left;
+    a {
+        color: palevioletred;
+        font-family: arial;
+        text-decoration: none;
+        display: inline-block;
+        padding: 10px 20px;
+        background: rgb(102, 51, 153);
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        letter-spacing: 5px;
+        position: relative;
+        bottom: 30px;
+        &:hover {
+            color: white;
+        }
+    }
+}

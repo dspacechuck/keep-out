@@ -1,0 +1,639 @@
+/* Setup Snippet */
+html {
+  line-height: 1.15;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+article, aside, footer, header, nav, section {
+  display: block;
+}
+
+h1 {
+  font-size: 2em;
+  margin: .67em 0;
+}
+
+figcaption, figure, main {
+  display: block;
+}
+
+figure {
+  margin: 1em 40px;
+}
+
+hr {
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
+  height: 0;
+  overflow: visible;
+}
+
+pre {
+  font-family: monospace,monospace;
+  font-size: 1em;
+}
+
+a {
+  background-color: transparent;
+  -webkit-text-decoration-skip: objects;
+}
+
+abbr[title] {
+  border-bottom: none;
+  text-decoration: underline;
+  -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+}
+
+b, strong {
+  font-weight: inherit;
+}
+
+b, strong {
+  font-weight: bolder;
+}
+
+code, kbd, samp {
+  font-family: monospace,monospace;
+  font-size: 1em;
+}
+
+dfn {
+  font-style: italic;
+}
+
+mark {
+  background-color: #ff0;
+  color: #000;
+}
+
+small {
+  font-size: 80%;
+}
+
+sub, sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -.25em;
+}
+
+sup {
+  top: -.5em;
+}
+
+audio, video {
+  display: inline-block;
+}
+
+audio:not([controls]) {
+  display: none;
+  height: 0;
+}
+
+img {
+  border-style: none;
+}
+
+svg:not(:root) {
+  overflow: hidden;
+}
+
+button, input, optgroup, select, textarea {
+  font-family: sans-serif;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+}
+
+button, input {
+  overflow: visible;
+}
+
+button, select {
+  text-transform: none;
+}
+
+button, html [type=button], [type=reset], [type=submit] {
+  -webkit-appearance: button;
+}
+
+button::-moz-focus-inner, [type=button]::-moz-focus-inner, [type=reset]::-moz-focus-inner, [type=submit]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+button:-moz-focusring, [type=button]:-moz-focusring, [type=reset]:-moz-focusring, [type=submit]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+fieldset {
+  padding: .35em .75em .625em;
+}
+
+legend {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  color: inherit;
+  display: table;
+  max-width: 100%;
+  padding: 0;
+  white-space: normal;
+}
+
+progress {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+textarea {
+  overflow: auto;
+}
+
+[type=checkbox], [type=radio] {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 0;
+}
+
+[type=number]::-webkit-inner-spin-button, [type=number]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+[type=search] {
+  -webkit-appearance: textfield;
+  outline-offset: -2px;
+}
+
+[type=search]::-webkit-search-cancel-button, [type=search]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
+
+details, menu {
+  display: block;
+}
+
+summary {
+  display: list-item;
+}
+
+canvas {
+  display: inline-block;
+}
+
+template {
+  display: none;
+}
+
+[hidden] {
+  display: none;
+}
+
+.clearfix:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: '';
+  clear: both;
+  height: 0;
+}
+
+html {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  -webkit-box-sizing: inherit;
+          box-sizing: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  white-space: nowrap;
+  -webkit-clip-path: inset(100%);
+          clip-path: inset(100%);
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+}
+
+/* Strip default margins and padding */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* Body styling */
+body {
+  height: 100vh;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  font-size: 62.5%;
+  background: #270f3f;
+  /* Container for game and infoPanel */
+}
+
+body .wrapper {
+  width: 1200px;
+  margin: 0 auto;
+  min-width: 1000px;
+}
+
+/* h1 (title formatting) */
+h1, h2 {
+  margin: 0;
+  padding: 0;
+  font-family: "Monofett", cursive;
+  font-size: 4.5rem;
+  text-align: center;
+  color: blueviolet;
+}
+
+/* Footer properties */
+footer {
+  text-align: left;
+}
+
+footer a {
+  color: palevioletred;
+  font-family: arial;
+  text-decoration: none;
+  display: inline-block;
+  padding: 10px 20px;
+  background: rebeccapurple;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  letter-spacing: 5px;
+  position: relative;
+  bottom: 30px;
+}
+
+footer a:hover {
+  color: white;
+}
+
+/* Alternate properties for game screen styling */
+.altProps {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  height: 900px;
+}
+
+/* Container for game */
+.game {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background: rebeccapurple;
+  /* padding: 20px; */
+  /* flex: 0 0 75%; */
+  height: 100%;
+  border-top-left-radius: 10px;
+  /* Temporarily added this radius for UI coherency during user testing */
+  border-bottom-left-radius: 10px;
+  /* border: 5px solid red; */
+  width: 900px;
+  height: 900px;
+}
+
+/* Hides ghost from rendering unless rendered by Matter.js */
+svg {
+  display: none;
+}
+
+/* Game stats info panel*/
+.infoPanel {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background: palevioletred;
+  font-family: monospace;
+  color: darkslateblue;
+  font-size: 1.4rem;
+  font-weight: bold;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 1 25%;
+          flex: 0 1 25%;
+  height: 100%;
+  text-align: center;
+  border-bottom-right-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* Game stats inner container */
+.infoWrap {
+  height: 600px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  margin-bottom: 170px;
+}
+
+/* Stats conatainer */
+.stats {
+  height: 100px;
+}
+
+.timerDiv,
+.timerDivBg {
+  /* width: 200px; */
+  height: 14px;
+  border: 3px solid none;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+/* Timer progress bar */
+.timerDiv {
+  background: orange;
+  font-size: 1.7rem;
+  font-weight: bold;
+  width: 0px;
+}
+
+/* Timer progress bar background */
+.timerDivBg {
+  background: #ab48b4;
+  width: 200px;
+}
+
+/* Styling for time readout text */
+.myTime {
+  word-wrap: nowrap;
+  position: relative;
+  top: -12px;
+  color: darkslateblue;
+}
+
+/* Button animation */
+@-webkit-keyframes breathe {
+  from {
+    letter-spacing: initial;
+  }
+  to {
+    letter-spacing: 3px;
+  }
+}
+@keyframes breathe {
+  from {
+    letter-spacing: initial;
+  }
+  to {
+    letter-spacing: 3px;
+  }
+}
+
+/* Format start/reset button */
+.startBtn {
+  border-radius: 10px;
+  padding: 15px;
+  width: 120px;
+  color: darkslateblue;
+  border: 3px solid transparent;
+}
+
+/* Primary properties for start button */
+.btnPrimaryProps {
+  background: #9ad82c;
+  letter-spacing: 3px;
+  -webkit-transition: ease 1s;
+  transition: ease 1s;
+  -webkit-animation-name: breathe;
+          animation-name: breathe;
+  -webkit-animation-duration: 1.5s;
+          animation-duration: 1.5s;
+  -webkit-animation-iteration-count: infinite;
+          animation-iteration-count: infinite;
+  -webkit-animation-direction: alternate;
+          animation-direction: alternate;
+}
+
+/* Alt properties class for start button (when it changes to "RESET") */
+.btnAltProps {
+  background: orange;
+  -webkit-transition: ease 1s;
+  transition: ease 1s;
+}
+
+/* Alt properties class for start button (when it changes to "RESET") on hover*/
+.btnAltProps:hover {
+  /* background: rgb(235, 47, 47); */
+  cursor: pointer;
+}
+
+/* Start button hover state */
+.startBtn:hover {
+  /* background: yellow; */
+  cursor: pointer;
+}
+
+.startBtn:hover .btnPrimaryProps {
+  letter-spacing: 1px;
+}
+
+/* Rules section text formatting */
+.rules p {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: lighter;
+  font-size: 0.95rem;
+  margin: 20px;
+  text-align: left;
+}
+
+/* Container for game score */
+.scoreDiv {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  height: 100px;
+}
+
+/* .modal common styling */
+.modalContainer {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  position: absolute;
+  margin: 0 auto;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  background: rgba(171, 72, 180, 0.541);
+  left: 0;
+  top: 0;
+}
+
+.modalContainer .modal {
+  width: 1200px;
+  height: 900px;
+  background: rgba(128, 128, 128, 0.418);
+  /* background-color: grey; */
+  border-radius: 10px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.modalContainer .modal ul {
+  /* text-decoration: none; */
+  list-style-type: none;
+}
+
+.introContent {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  width: 1200px;
+  height: 900px;
+  /* border: 3px solid red; */
+  background: darkslateblue;
+  border-radius: 10px;
+}
+
+.subMenu {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin: 0;
+  padding: 0;
+  color: palevioletred;
+  font-family: monospace;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.mainContents {
+  /* display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    color: palevioletred;
+    font-family: monospace;
+    font-size: 1.4rem;
+    font-weight: bold; */
+}
+
+.introContent h2 {
+  font-family: "Monofett", cursive;
+  font-size: 4.5rem;
+  text-align: center;
+  /* color: blueviolet; */
+}
+
+.introContent h3 {
+  font-size: 1.4rem;
+}
+
+.introContent ul {
+  padding-top: 30px;
+}
+
+.introContent li {
+  padding: 10px 0;
+  text-align: center;
+}
+
+.introContent button {
+  padding: 5px 10px;
+  min-width: 200px;
+  font-size: 1rem;
+  color: white;
+  background: none;
+}

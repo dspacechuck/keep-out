@@ -1,0 +1,128 @@
+/* Game stats info panel*/
+.infoPanel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background: palevioletred;
+    font-family: monospace;
+    color: darkslateblue;
+    font-size: 1.4rem;
+    font-weight: bold;
+    flex: 0 1 25%;
+    height: 100%;
+    text-align: center;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  
+  /* Game stats inner container */
+  .infoWrap {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 170px;
+  }
+  
+  /* Stats conatainer */
+  .stats {
+    height: 100px;
+  }
+  
+  .timerDiv, 
+  .timerDivBg {
+    /* width: 200px; */
+    height: 14px;
+    border: 3px solid none;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+  }
+  /* Timer progress bar */
+  .timerDiv {
+    background: orange;
+    font-size: 1.7rem;
+    font-weight: bold;
+    width: 0px;
+  }
+  
+  /* Timer progress bar background */
+  .timerDivBg {
+    background: rgb(171, 72, 180);
+    width: 200px;
+  }
+  
+  
+  /* Styling for time readout text */
+  .myTime {
+    word-wrap: nowrap;
+    position: relative;
+    top: -12px;
+    color: darkslateblue
+  }
+  
+  /* Button animation */
+  @keyframes breathe {
+    from {letter-spacing: initial;}
+    to {letter-spacing: 3px;}
+  }
+  
+  /* Format start/reset button */
+  .startBtn {
+    border-radius: 10px;
+    padding: 15px;
+    width: 120px;
+    color: darkslateblue;
+    border: 3px solid transparent;
+  }
+  
+  /* Primary properties for start button */
+  .btnPrimaryProps {
+    background: rgb(154, 216, 44);
+    letter-spacing: 3px;
+    transition: ease 1s;
+    animation-name: breathe;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+  
+  /* Alt properties class for start button (when it changes to "RESET") */
+  .btnAltProps {
+    background: orange;
+    transition: ease 1s;
+  }
+  
+  /* Alt properties class for start button (when it changes to "RESET") on hover*/
+  .btnAltProps:hover {
+    /* background: rgb(235, 47, 47); */
+    cursor: pointer;
+  }
+  
+  /* Start button hover state */
+  .startBtn:hover {
+    /* background: yellow; */
+    cursor: pointer;
+  }
+  
+  .startBtn:hover .btnPrimaryProps {
+    letter-spacing: 1px;
+  }
+  
+  /* Rules section text formatting */
+  .rules p {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: lighter;
+    font-size: 0.95rem;
+    margin: 20px;
+    text-align: left;
+  }
+  
+  /* Container for game score */
+  .scoreDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+  }

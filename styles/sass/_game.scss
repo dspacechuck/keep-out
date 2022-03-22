@@ -1,0 +1,29 @@
+/* Alternate properties for game screen styling */
+.altProps {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 900px;
+}
+
+/* Container for game */
+.game {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgb(102, 51, 153);
+  /* padding: 20px; */
+  /* flex: 0 0 75%; */
+  height: 100%;
+  border-top-left-radius: 10px;
+  /* Temporarily added this radius for UI coherency during user testing */
+  border-bottom-left-radius: 10px;
+  /* border: 5px solid red; */
+  width: 900px;
+  height: 900px;
+}
+
+/* Hides ghost from rendering unless rendered by Matter.js */
+svg {
+  display: none;
+}

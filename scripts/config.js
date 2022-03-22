@@ -195,7 +195,7 @@ export const levels = [
         mid: [
             {
                 x: 250,
-                y: 100
+                y: 200
             }
         ],
     },
