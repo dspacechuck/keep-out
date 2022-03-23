@@ -1,4 +1,4 @@
-import { canvasProps, startBtnProps, renderConfig, ballOptions, sensorOptions, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData, scoreData, ghostVertices } from './config.js'; 
+import { canvasProps, startBtnProps, renderConfig, ballOptions, groundOptions, moveModes, levels, ghostLevels, ghostTypes, saveData, scoreData, ghostVertices } from './config.js'; 
 
 const { Body, Bodies, Common, Composite, Composites, Constraint, Detector, Engine, Events, Mouse, MouseConstraint, Render, SAT, Sleeping, Svg, World, Runner } = Matter;
 
@@ -13,7 +13,7 @@ const render = Render.create({
         width: canvasProps.width,
         height: canvasProps.height,
         wireframes: false,
-        showPerformance: true,
+        showPerformance: false,
         background: 'rgba(0,0,0,0)',     
     }
 }); 
@@ -24,7 +24,6 @@ const bodies = {
     ball: null, 
     groundPlane: [],
     platforms: [],
-    // ghost: null,
     ghost: []
 }
 
@@ -36,6 +35,14 @@ const scoreEl = document.querySelector('.myScore');
 const startGameBtn = document.querySelector('.startGameBtn');
 const instructionsBtn = document.querySelector('.instructionsBtn');
 const modalContainer = document.querySelector('.modalContainer');
+const modal = document.querySelector('.modal');
+const preStartModal = document.querySelector('.preStartModal');
+const mainContents = document.querySelector('.mainContents');
+const instructionsCont = document.querySelector('.instructions');
+const preStartCounter = document.querySelector('.preStartModal .counter');
+const levelEndModal = document.querySelector('.levelEndModal');
+const nextLevelBtn = document.querySelector('.nextLevelBtn');
+const restartLevelBtn = document.querySelector('.restartLevelBtn');
 
 // Define controls
 const controls = {
@@ -61,9 +68,6 @@ const currLevelObj = levels[saveData.currLevel];
 const solid = 0x0001;
 const nextBall = 0x0004;
 
-// Tracks if ghost has been hit (to analyze if ghost has been toppled)
-let analyzingHit = false;
-
 // Toggles mouse control ON/OFF
 const activateMouse = (status) => {
     if (status) {
@@ -79,10 +83,15 @@ const activateMouse = (status) => {
     }
 }
 
-// Tracks current level
-// const currLevelObj = levels.find((level) => {return level.currentLevel === true});
-// const currLevelObj = levels[saveData.currLevel];
-// const currLevelObj = levels[2];
+
+// Toggles Level End Modal ON/OFF
+const toggleLevelEndModal = (status) => {
+    if (status) {
+        
+    } else {
+
+    }
+}
 
 // Function to show scores to UI
 const showScores = (currScore) => {
@@ -233,6 +242,7 @@ const invokeGameWon = () => {
     countTimer(true);
     saveData.bumpLevel(); // advance to next level
     console.log('current level: ', saveData.currLevel);
+    toggleLevelEndModal(true);
 }
 
 // Awards the player for knocking the ghost over
@@ -754,16 +764,83 @@ const runEngine = () => {
 // add all objects to the world
 runEngine();
 
+// Pre-start modal sequence
+const preStartModalSequence = () => {
+
+    const tl = gsap.timeline();
+    tl.to('.instructions', {opacity: 0, duration: 0.2})
+    .to('.mainContents', {opacity: 0, duration: 0})
+    .to('.modalContainer', {background: 'none', duration: 0})
+    .to('.preStartModal', {display: 'block', duration: 0})
+
+}
+
+// Shows the 3, 2, 1, countdown
+const showPreStartModal = () => {
+
+    let count = 3;
+    let timeLeft = 3;
+
+    const preStartTimer = gsap.from(preStartCounter, timeLeft, {
+        ease: Linear.easeNone,
+        paused: true,
+        onUpdate: function(){
+            timeLeft = count - Math.floor((preStartTimer.progress()*count));
+            preStartCounter.innerHTML = timeLeft;
+        },
+        onComplete: function(){ 
+            console.log("complete");
+            preStartModal.classList.add('hidden');
+            modal.classList.add('hidden');
+            modalContainer.classList.add('hidden');
+            // Start game
+            startBtnOps();
+        }
+    });
+
+    preStartModalSequence();
+    preStartTimer.play();
+
+}
+
 // Activates the main menu buttons
 const activateIntroBtns = (status) => {
+    
+    let inStructionsTl;
+
+    const checkBtnClick = () => {
+        if (instructionsCont.classList.contains('show')) {
+            inStructionsTl.kill();
+        }
+    }
+
+    const onInstructionsComplete = () => {
+        instructionsCont.classList.toggle('show');
+    }
+
+    const toggleInstructions = () => {
+
+        inStructionsTl = gsap.timeline({paused: true, onUpdate: checkBtnClick(), onComplete: onInstructionsComplete()});
+        inStructionsTl.fromTo('.instructions', {display: 'none'}, {display: 'flex', duration: 0})
+            .fromTo('.instructions', {opacity: 0}, {opacity: 1, duration: 1});
+
+        if (instructionsCont.classList.contains('show')) {
+            inStructionsTl.play();
+        } else {
+            inStructionsTl.reverse();
+        }
+        
+    }
+
+
     if (status) {
         startGameBtn.addEventListener('click', () => {
             console.log("Let's start the game!");
             console.log(modalContainer)
-            modalContainer.style="display: none";
+            showPreStartModal();
         });
         instructionsBtn.addEventListener('click', () => {
-            console.log("1) Click and drag the ball back, 2) Aim the ball, 3) Release the mouse to laynch the ball. ***Knock over all ghosts before the timer runs out***");
+            toggleInstructions();
         });
     }
 }

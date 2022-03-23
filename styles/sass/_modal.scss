@@ -11,6 +11,10 @@
     background:rgba(171, 72, 180, 0.541);
     left: 0;
     top: 0;
+
+    &.hidden {
+        display: none;
+    }
     
     .modal {
         width: 1200px;
@@ -20,79 +24,95 @@
         border-radius: 10px;
         display: flex;
 
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 1200px;
+        height: 900px;
+        /* border: 3px solid red; */
+        background: darkslateblue;
+        border-radius: 10px;
+
         ul {
             /* text-decoration: none; */
             list-style-type: none;
         }
-      }
-  }
+
+        &.hidden {
+            display: none;
+        }
+    }
+}
    
-  .introContent {
+.subMenu {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 1200px;
-    height: 900px;
+    // width: 1200px;
+    // height: 900px;
     /* border: 3px solid red; */
     background: darkslateblue;
     border-radius: 10px;
-  }
-  
-  .subMenu {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+
     margin: 0;
     padding: 0;
     color: palevioletred;
     font-family: monospace;
     font-size: 1.4rem;
     font-weight: bold;
-  }
-  
-  .mainContents {
-    /* display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-    color: palevioletred;
-    font-family: monospace;
-    font-size: 1.4rem;
-    font-weight: bold; */
-  }
-  
-  .instructions {
+
+    &.hidden {
+        display: none;
+    }
+
+    h2 {
+        font-family: "Monofett", cursive;
+        font-size: 4.5rem;
+        text-align: center;
+        /* color: blueviolet; */
+    }
     
-  }
-  
-  .introContent h2 {
-    font-family: "Monofett", cursive;
-    font-size: 4.5rem;
-    text-align: center;
-    /* color: blueviolet; */
-  }
-  
-  .introContent h3 {
-    font-size: 1.4rem;
-  }
-  
-  .introContent ul {
-    padding-top: 30px;
-  }
-  
-  .introContent li {
-    padding: 10px 0;
-    text-align: center;
-  }
-  
-  .introContent button {
-    padding: 5px 10px;
-    min-width: 200px;
-    font-size: 1rem;
-    color: white;
-    background: none;
-  }
+    h3 {
+        font-size: 1.4rem;
+    }
+    
+    ul {
+        padding-top: 30px;
+        li {
+            padding: 10px 0;
+            text-align: center;
+        }
+    }
+    
+    button {
+        padding: 5px 10px;
+        min-width: 200px;
+        font-size: 1rem;
+        color: white;
+        background: none;
+    }
+    
+    &.instructions {   
+        display: none;
+    }
+
+    &.preStartModal {
+        height: 100%;
+        width: 100%;
+        display: none;
+        .preStartInnerCont {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+    }
+}
+
+.levelEndModal {
+    &.hidden {
+        display: none;
+    }
+}
+    

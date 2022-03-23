@@ -31,31 +31,44 @@
 
         <section class="modalContainer">
             <div class="modal">
-                <div class="introContent">
-                    <div class="subMenu mainContents">
-                        <h2>KEEP OUT</h2>
-                        <h3>© Charles Wong, 2022</h3>
-                        <ul>
-                            <li id="startGame">
-                                <button class="startGameBtn">START GAME</button>
-                            </li>
-                            <li id="instructions">
-                                <button class="instructionsBtn">INSTRUCTIONS</button>
-                            </li>
-                        </ul>
-                    </div>
+                <!-- Shows main menu -->
+                <div class="subMenu mainContents">
+                    <h2>KEEP OUT</h2>
+                    <h3>© Charles Wong, 2022</h3>
+                    <ul>
+                        <li>
+                            <button class="startGameBtn">START GAME</button>
+                        </li>
+                        <li>
+                            <button class="instructionsBtn">INSTRUCTIONS</button>
+                        </li>
+                    </ul>
+                </div>
 
-                    <div class="subMenu instructions">
-                        <h3>How to play</h3>
-                        <ul>
-                            <li><span>Aim, </span><span>drag</span> and <span>release</span> the ball at the ghosts</li>
-                            <li>Knock over all ghosts before the time runs out!</li>
-                        </ul>
+                <!-- Shows game instructions -->
+                <div class="subMenu instructions">
+                    <h3>How to play:</h3>
+                    <ul>
+                        <li><span>Aim, </span><span>drag</span> and <span>release</span> the ball at the ghosts</li>
+                        <li>Knock over all ghosts before the time runs out!</li>
+                    </ul>
+                </div>
+
+                <!-- Shows the countdown of 3, 2, 1 before start of game -->
+                <div class="subMenu preStartModal">
+                    <div class="preStartInnerCont">
+                        <p class="counter">3</p>
                     </div>
                 </div>
 
-
-
+                <!-- Shows Level End modal -->
+                <div class="levelEndModal hidden">
+                    <div class="levelEndInnerCont">
+                        <h3 class="levelStatus">You Won!</h3>
+                        <button class="nextLevelBtn">Next Level</button>
+                        <button class="restartLevelBtn">Restart Level</button>
+                    </div>
+                </div>
 
             </div>
         </section>

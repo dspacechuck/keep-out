@@ -538,23 +538,16 @@ svg {
   top: 0;
 }
 
+.modalContainer.hidden {
+  display: none;
+}
+
 .modalContainer .modal {
   width: 1200px;
   height: 900px;
   background: rgba(128, 128, 128, 0.418);
   /* background-color: grey; */
   border-radius: 10px;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-}
-
-.modalContainer .modal ul {
-  /* text-decoration: none; */
-  list-style-type: none;
-}
-
-.introContent {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -575,6 +568,15 @@ svg {
   border-radius: 10px;
 }
 
+.modalContainer .modal ul {
+  /* text-decoration: none; */
+  list-style-type: none;
+}
+
+.modalContainer .modal.hidden {
+  display: none;
+}
+
 .subMenu {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -589,6 +591,9 @@ svg {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
+  /* border: 3px solid red; */
+  background: darkslateblue;
+  border-radius: 10px;
   margin: 0;
   padding: 0;
   color: palevioletred;
@@ -597,43 +602,60 @@ svg {
   font-weight: bold;
 }
 
-.mainContents {
-  /* display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-    color: palevioletred;
-    font-family: monospace;
-    font-size: 1.4rem;
-    font-weight: bold; */
+.subMenu.hidden {
+  display: none;
 }
 
-.introContent h2 {
+.subMenu h2 {
   font-family: "Monofett", cursive;
   font-size: 4.5rem;
   text-align: center;
   /* color: blueviolet; */
 }
 
-.introContent h3 {
+.subMenu h3 {
   font-size: 1.4rem;
 }
 
-.introContent ul {
+.subMenu ul {
   padding-top: 30px;
 }
 
-.introContent li {
+.subMenu ul li {
   padding: 10px 0;
   text-align: center;
 }
 
-.introContent button {
+.subMenu button {
   padding: 5px 10px;
   min-width: 200px;
   font-size: 1rem;
   color: white;
   background: none;
+}
+
+.subMenu.instructions {
+  display: none;
+}
+
+.subMenu.preStartModal {
+  height: 100%;
+  width: 100%;
+  display: none;
+}
+
+.subMenu.preStartModal .preStartInnerCont {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.levelEndModal.hidden {
+  display: none;
 }

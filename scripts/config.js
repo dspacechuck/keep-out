@@ -35,18 +35,6 @@ export const ballOptions = {
     // isSensor: true
 }
 
-export const sensorOptions = {
-    restitution: 1, 
-    render: {
-        sprite: {
-            // texture: './assets/ghost-freepik.png',
-            xScale: 0.2,
-            yScale: 0.2
-        }
-    },
-    isSensor: true
-}
-
 // contains detials on scoreing
 // "Tap" is a ghost hit
 // "Score" is if a ghost is knocked down
