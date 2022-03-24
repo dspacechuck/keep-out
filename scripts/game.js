@@ -35,9 +35,9 @@ const scoreEl = document.querySelector('.myScore');
 const startGameBtn = document.querySelector('.startGameBtn');
 const instructionsBtn = document.querySelector('.instructionsBtn');
 const modalContainer = document.querySelector('.modalContainer');
-const modal = document.querySelector('.modal');
-const preStartModal = document.querySelector('.preStartModal');
-const mainContents = document.querySelector('.mainContents');
+// const modal = document.querySelector('.modal');
+// const preStartModal = document.querySelector('.preStartModal');
+// const mainContents = document.querySelector('.mainContents');
 const instructionsCont = document.querySelector('.instructions');
 const preStartCounter = document.querySelector('.preStartModal .counter');
 const levelEndModal = document.querySelector('.levelEndModal');
@@ -62,7 +62,7 @@ const levelStates = {
 }
 
 // Tracks current level
-const currLevelObj = levels[saveData.currLevel];
+let currLevelObj = levels[saveData.currLevel];
 
 // Setup bitmasks for collision filter
 const solid = 0x0001;
@@ -71,7 +71,7 @@ const nextBall = 0x0004;
 // Toggles mouse control ON/OFF
 const activateMouse = (status) => {
     if (status) {
-        World.add(engine.world, [controls.mouseConstraint]);
+        Composite.add(engine.world, [controls.mouseConstraint]);
         Events.on(controls.mouseConstraint, 'enddrag', (e) => {
             if (e.body === bodies.ball) {
                 controls.firing = true;
@@ -80,16 +80,39 @@ const activateMouse = (status) => {
     } else {
         Events.off(controls.mouseConstraint);
         World.remove(engine.world, [controls.mouseConstraint]);
+        console.log(bodies.sling);
     }
 }
 
 
-// Toggles Level End Modal ON/OFF
-const toggleLevelEndModal = (status) => {
-    if (status) {
-        
-    } else {
+// Activate/deactivate buttons on Level End modal
+const activateNextLevelBtn = (status) => {
+    nextLevelBtn.disabled = !status;
+}
 
+const activateRestartBtn = (status) => {
+    restartLevelBtn.disabled = !status;
+}
+
+// Toggles Level End Modal ON/OFF
+const toggleLevelEndModal = (status, levelWon) => {
+        
+    const levelEndModalTl = gsap.timeline({paused: true});
+    levelEndModalTl.fromTo('.levelEndModal', {display: 'none'}, {display: 'flex', duration: 0})
+    .fromTo('.levelEndModal', {opacity: 0}, {opacity: 1, duration: 2})
+    .fromTo('.modalContainer', {display: 'none'}, {display: 'flex', duration: 0})
+    .fromTo('.modal', {display: 'none'}, {display: 'flex', duration: 0})
+    
+    if (status) {
+        levelEndModalTl.play();
+    } else if (!status) {
+        levelEndModalTl.reverse();
+    }
+
+    if (levelWon) {
+        activateNextLevelBtn(true);
+    } else if (!levelWon){
+        activateRestartBtn(true);
     }
 }
 
@@ -111,10 +134,6 @@ const finalizeScores = (timeRem) => {
     console.log(bodies.ghost);
 
     const baseScore = timeRem * scoreBasis;
-
-    // const ghostScore = bodies.ghost
-    //     .map((type) => type.points)
-    //     .reduce((prevVal, currVal) => prevVal + currVal, 0); // creates an array of all ghost names to match
 
     const levelScore = perLevelBonus * (saveData.currLevel + 1);
     const livesLeftScore = livesLeftBonus * saveData.livesLeft;    
@@ -158,6 +177,9 @@ const tween = gsap.from(timerBar, levelStates.timeAtStart, {
     }
 });
 
+const resetTimer = () => {
+    tween.restart();
+}
 
 // Starts/pauses countdown timer
 const countdownTimerMgr = () => {
@@ -169,10 +191,12 @@ const countdownTimerMgr = () => {
     if (controls.startState) {
         activateMouse(true);
         tween.play();
+        console.log('timer running');
     } else {
         // pause timer
         activateMouse(false);
         tween.pause();
+        console.log('timer paused');
     }
    
 }
@@ -242,7 +266,7 @@ const invokeGameWon = () => {
     countTimer(true);
     saveData.bumpLevel(); // advance to next level
     console.log('current level: ', saveData.currLevel);
-    toggleLevelEndModal(true);
+    toggleLevelEndModal(true, true);
 }
 
 // Awards the player for knocking the ghost over
@@ -467,7 +491,7 @@ const activateEngineListeners = (status) => {
                 
                 bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
 
-                World.add(engine.world, bodies.ball); // 'launches' the ball
+                Composite.add(engine.world, bodies.ball); // 'launches' the ball
                 bodies.sling.bodyB = bodies.ball;
                 controls.firing = false;
     
@@ -481,6 +505,19 @@ const activateEngineListeners = (status) => {
 
 
 }
+
+// const addMouseConstraint = () => {
+//     controls.mouse = Mouse.create(render.canvas);
+//     controls.mouseConstraint = MouseConstraint.create(engine, {
+//         mouse: controls.mouse,
+//         collisionFilter: {
+//             category: nextBall
+//         },
+//         constraint: {
+//             render: { visible: false }
+//         }
+//     });
+// }
 
 // Function to add a sling to the world and setup mouse constraint
 const createSling = (levelParam) => {  
@@ -513,7 +550,7 @@ const createSling = (levelParam) => {
         }
     });
 
-    console.log(controls.mouseConstraint);
+    // console.log(controls.mouseConstraint);
 
     // Bodies and body-supporting functions
     bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
@@ -529,46 +566,14 @@ const createSling = (levelParam) => {
     
     activateEngineListeners(true);
 
-    // Events.on(engine, 'collisionEnd', (e) => {
-
-    //     const pairs = e.pairs;
-       
-    //     pairs?.forEach(pair => {
-    //         // pair.bodyB.label === 'ghost' 
-    //         console.log(pair);
-    //         if (pair.bodyA.label === 'ghost' || pair.bodyB.label === 'ghost') {
-    //             console.log('ghost was hit')
-    //             console.log(bodies.ghost);
-    //             saveData.ghostHits++;
-    //             console.log(saveData.ghostHits);
-    //             // World.remove(engine.world, bodies.ghost);
-    //         }
-    //     })
-
-    // })
-
-    // Events.on(engine, 'afterUpdate', () => {
-    //      if (controls.firing && Math.abs(bodies.ball.position.x - slingProps.x) < 20 && Math.abs(bodies.ball.position.y - slingProps.y) < 20) {
-            
-    //         bodies.ball.collisionFilter.category = solid;
-    //         bodies.ball.collisionFilter.mask = solid;
-
-    //         bodies.ball = Bodies.circle(slingProps.x, slingProps.y, ballProps.radius, ballOptions);
-
-    //         World.add(engine.world, bodies.ball); // 'launches' the ball
-    //         bodies.sling.bodyB = bodies.ball;
-    //         controls.firing = false;
-
-    //         console.log(controls.firing);
-    //     }  
-
-    //     scoreDetector(bodies.ghost);
-
-    // });
-
-    // World.add(engine.world, [bodies.ball, controls.mouseConstraint, bodies.sling]);
-    World.add(engine.world, [bodies.ball, bodies.sling]);
+    // Composite.add(engine.world, [bodies.ball, controls.mouseConstraint, bodies.sling]);
+    Composite.add(engine.world, [bodies.ball, bodies.sling]);
 }
+
+// const addSling = () => {
+//     activateEngineListeners(true);
+//     Composite.add(engine.world, [bodies.ball, bodies.sling]);
+// }
 
 // Function to add platforms to the world
 const addPlatforms = (levelParam) => {
@@ -585,7 +590,7 @@ const addPlatforms = (levelParam) => {
         bodies.platforms.push(currPlatform);
     })
 
-    World.add(engine.world, bodies.platforms);
+    Composite.add(engine.world, bodies.platforms);
 }
 
 // Function to animate game objects (.i.e: after game starts)
@@ -621,8 +626,12 @@ const addElements = async (levelParam) => {
         const groundPlanes = levelParam.groundPlanes;
         const currLvlGhosts = levelParam.ghost;
 
-
-        createSling(levelParam);
+        console.log(currLevelObj);
+        // if (currLevelObj.level === 1) {
+            createSling(levelParam);
+        // } else {
+            // addSling();
+        // }
 
         console.log("addElements levelParam: ", levelParam);
         
@@ -637,17 +646,17 @@ const addElements = async (levelParam) => {
         // bodies.groundPlane = Bodies.rectangle(150, 890, 1600, 20, groundOptions);
         
         // load a svg file and parse it with image/svg+xml params
-        const loadSvg = (filePath) => {
-            return fetch(filePath)
-                .then((res) => { return res.text(); })
-                .then((raw) => { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
-        };
+        // const loadSvg = (filePath) => {
+        //     return fetch(filePath)
+        //         .then((res) => { return res.text(); })
+        //         .then((raw) => { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
+        // };
 
-        // 
-        var select = function(root, selector) {
-            console.log(Array.prototype.slice.call(root.querySelectorAll(selector)))
-            return Array.prototype.slice.call(root.querySelectorAll(selector));
-        };
+        // // 
+        // var select = function(root, selector) {
+        //     console.log(Array.prototype.slice.call(root.querySelectorAll(selector)))
+        //     return Array.prototype.slice.call(root.querySelectorAll(selector));
+        // };
 
         // This function can be used to load any SVG into an object in the game
         const addGhost = (ghostNum, ghostName, ghostTapPoints, ghostPoints, pngPath, svgPath, x, y) => {
@@ -690,7 +699,7 @@ const addElements = async (levelParam) => {
                     bodies.ghost[ghostNum].points = ghostPoints;
                     bodies.ghost[ghostNum].tapPoints = ghostTapPoints
         
-                    World.add(engine.world, [bodies.ghost[ghostNum]]);
+                    Composite.add(engine.world, [bodies.ghost[ghostNum]]);
 
                     bodies.ghost[ghostNum].collisionFilter = { category: solid, mask: solid };
 
@@ -740,7 +749,7 @@ const addElements = async (levelParam) => {
         console.log('adding platforms')
 
         // Add items to world
-        res(World.add(engine.world, [...bodies.groundPlane]));
+        res(Composite.add(engine.world, [...bodies.groundPlane]));
         
     })    
 
@@ -750,10 +759,57 @@ const addElements = async (levelParam) => {
 
 }
 
+// Sequence to load next level
+const loadNextLevel = () => {
+    // Remove sling
+    // Remove ball
+    // Remove elements
+
+    // Load next level
+    // Dismiss Level End modal
+    // Start 3-2-1 modal 
+
+    Composite.clear(engine.world, false, true);
+    // Composite.remove(engine.world, [bodies.ghost, bodies.groundPlane, bodies.platforms]);
+
+    console.log(Composite);
+
+    // controls.mouse = null;
+    // controls.mouseConstraint = null;
+
+    // bodies.sling = null;
+    bodies.groundPlane = [];
+    bodies.platforms = [];
+    bodies.ghost = [];
+
+    currLevelObj = levels[saveData.currLevel];
+
+    loadLevel();
+    toggleLevelEndModal(false, true);
+  
+    activateEngineListeners(true);
+    activateMouse(true);
+    activateStartBtn(true);
+
+    // Remove modals 
+    // Change this to show 3-2-1 modal instead
+    gsap.to('.modal', {display: 'none', duration: 0});
+    gsap.to('.modalContainer', {display: 'none', duration: 0});
+
+    resetTimer();
+
+    startBtnOps();
+
+
+
+}
+
 // Loads level
 const loadLevelTimer = () => {
     levelStates.timeLeft = currLevelObj.timer; // Load timer value
     levelStates.timeAtStart = currLevelObj.timer; // Load time-at-start value
+    console.log("time left: ", levelStates.timeLeft);
+    console.log("time at start: ", levelStates.timeAtStart);
 }
 
 const runEngine = () => {
@@ -769,9 +825,11 @@ const preStartModalSequence = () => {
 
     const tl = gsap.timeline();
     tl.to('.instructions', {opacity: 0, duration: 0.2})
+    .to('.instructions', {display: 'none', duration: 0})
     .to('.mainContents', {opacity: 0, duration: 0})
+    .to('.mainContents', {display: 'none', duration: 0})
     .to('.modalContainer', {background: 'none', duration: 0})
-    .to('.preStartModal', {display: 'block', duration: 0})
+    .to('.preStartModal', {display: 'flex', duration: 0})
 
 }
 
@@ -790,9 +848,18 @@ const showPreStartModal = () => {
         },
         onComplete: function(){ 
             console.log("complete");
-            preStartModal.classList.add('hidden');
-            modal.classList.add('hidden');
-            modalContainer.classList.add('hidden');
+
+            const countdownDoneTl = gsap.timeline();
+
+            countdownDoneTl.to('.preStartModal', {opacity: 0, duration: 0})
+                .to('.preStartModal', {display: 'none', duration: 0})
+                .to('.modal', {display: 'none', duration: 0})
+                .to('.modalContainer', {display: 'none', duration: 0})
+
+            // preStartModal.classList.add('hidden');
+            // modal.classList.add('hidden');
+            // modalContainer.classList.add('hidden');
+            
             // Start game
             startBtnOps();
         }
@@ -845,15 +912,24 @@ const activateIntroBtns = (status) => {
     }
 }
 
-$(document).ready(async () => {
-    activateIntroBtns(true);
-    console.log('game is loaded!');
-    activateStartBtn(true);
-    const addedEl = addElements(currLevelObj)
+const activateLevelEndBtns = () => {
 
-        // .then(activateScoreListener)
-        // .then(loadLevelTimer())
+    nextLevelBtn.addEventListener('click', () => {
+        // Remove all elements from the current level
+        // Load next level
+        // Load 3.2.1 screen again
+        // Start game
+        loadNextLevel();
+    });
+    restartLevelBtn.addEventListener('click', () => {
+
+    });
     
+}
+
+const loadLevel = () => {
+    // addMouseConstraint();
+    const addedEl = addElements(currLevelObj)  
     Promise.resolve(addedEl)
         .then(() => {
             activateScoreListener();
@@ -861,16 +937,33 @@ $(document).ready(async () => {
             console.log('everything loaded!');
             }
         )
-    
-    $.getScript("../lib/pathseg.js")
-    .done(function(script, textStatus) {
-        console.log(textStatus);
-    })
-    .fail(function(jqxhr, settings, exception) {
-        console.log("loading script failed.");
-    });
+}
 
-    console.log(engine.gravity.y) 
+$(document).ready(async () => {
+    activateIntroBtns(true);
+    console.log('game is loaded!');
+    activateStartBtn(true);
+    activateLevelEndBtns();
+
+    loadLevel();
+    // const addedEl = addElements(currLevelObj)  
+    // Promise.resolve(addedEl)
+    //     .then(() => {
+    //         activateScoreListener();
+    //         loadLevelTimer();
+    //         console.log('everything loaded!');
+    //         }
+    //     )
+    
+    // $.getScript("../lib/pathseg.js")
+    // .done(function(script, textStatus) {
+    //     console.log(textStatus);
+    // })
+    // .fail(function(jqxhr, settings, exception) {
+    //     console.log("loading script failed.");
+    // });
+
+    // console.log(engine.gravity.y) 
     // engine.gravity.y = 0.2;
 
     // Psuedocode
@@ -891,7 +984,7 @@ $(document).ready(async () => {
     testBtn.addEventListener('click', () => {
         console.log(bodies.ghost);
         console.log(!!bodies.ghost?.filter((ghost) => ghost.defeated));
-        checkghostStatus()
+        checkghostStatus();
     //    Body.applyForce(bodies.ghost[0], {x: bodies.ghost[0].position.x, y: bodies.ghost[0].position.y}, {x: 0, y: -0.15});
         // scoreDetector(bodies.ghost);
     });

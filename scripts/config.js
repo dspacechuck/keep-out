@@ -228,7 +228,7 @@ export const levels = [
             options: groundOptions
         }
     ],
-    timer: 30,
+    timer: 50,
     greeting: 'Who are you gonna call?',
     completeString: 'Level 2 complete!',
     // currentLevel: false,
@@ -635,7 +635,7 @@ export const ghostLevels = [
 export const saveData = {
     playerName: '',
     date: 0,
-    currLevel: 1,
+    currLevel: 0,
     bumpLevel: function() {this.currLevel ++},
     // bumpLevel: function() {this.currentLevel = true}, 
     timeLeftAtEnd: 0, 

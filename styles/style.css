@@ -656,6 +656,6 @@ svg {
           align-items: center;
 }
 
-.levelEndModal.hidden {
+.levelEndModal {
   display: none;
 }
