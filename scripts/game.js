@@ -79,7 +79,7 @@ const activateMouse = (status) => {
         })
     } else {
         Events.off(controls.mouseConstraint);
-        World.remove(engine.world, [controls.mouseConstraint]);
+        Composite.remove(engine.world, [controls.mouseConstraint]);
         console.log(bodies.sling);
     }
 }
@@ -206,9 +206,12 @@ const toggleStartButtonState = () => {
     if (controls.startState) {
         startBtn.innerHTML=startBtnProps.pauseString;
         startBtn.classList.add('btnAltProps');
+        // stopEngine();
     } else {
         startBtn.innerHTML=startBtnProps.startString;
         startBtn.classList.remove('btnAltProps');
+        // runEngine();
+        // stopEngine();
     }
 }
 
@@ -770,14 +773,10 @@ const loadNextLevel = () => {
     // Start 3-2-1 modal 
 
     Composite.clear(engine.world, false, true);
-    // Composite.remove(engine.world, [bodies.ghost, bodies.groundPlane, bodies.platforms]);
 
-    console.log(Composite);
+    console.log("All composite bodies");
+    console.log(Composite.allBodies(engine.world));
 
-    // controls.mouse = null;
-    // controls.mouseConstraint = null;
-
-    // bodies.sling = null;
     bodies.groundPlane = [];
     bodies.platforms = [];
     bodies.ghost = [];
@@ -788,7 +787,7 @@ const loadNextLevel = () => {
     toggleLevelEndModal(false, true);
   
     activateEngineListeners(true);
-    activateMouse(true);
+    activateMouse(false);
     activateStartBtn(true);
 
     // Remove modals 
@@ -800,6 +799,8 @@ const loadNextLevel = () => {
 
     startBtnOps();
 
+    console.log("All composite bodies on new level");
+    console.log(Composite.allBodies(engine.world));
 
 
 }
@@ -817,8 +818,10 @@ const runEngine = () => {
     Render.run(render);
 }
 
-// add all objects to the world
-runEngine();
+// const stopEngine = () => {
+//     // Runner.stop(engine);
+//     // Render.stop(render);
+// }
 
 // Pre-start modal sequence
 const preStartModalSequence = () => {
@@ -944,8 +947,9 @@ $(document).ready(async () => {
     console.log('game is loaded!');
     activateStartBtn(true);
     activateLevelEndBtns();
-
     loadLevel();
+    // add all objects to the world
+    runEngine();
     // const addedEl = addElements(currLevelObj)  
     // Promise.resolve(addedEl)
     //     .then(() => {
@@ -985,7 +989,10 @@ $(document).ready(async () => {
         console.log(bodies.ghost);
         console.log(!!bodies.ghost?.filter((ghost) => ghost.defeated));
         checkghostStatus();
-    //    Body.applyForce(bodies.ghost[0], {x: bodies.ghost[0].position.x, y: bodies.ghost[0].position.y}, {x: 0, y: -0.15});
+        console.log(Composite.allBodies(engine.world));
+        console.log('turn off mouse');
+        activateMouse(false);
+        // Body.applyForce(bodies.ghost[0], {x: bodies.ghost[0].position.x, y: bodies.ghost[0].position.y}, {x: 0, y: -0.15});
         // scoreDetector(bodies.ghost);
     });
 
